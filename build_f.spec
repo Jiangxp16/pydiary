@@ -6,7 +6,9 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[('style\\*', '.\\style')],
-    hiddenimports=['holidays.countries'],
+    hiddenimports=[
+        'holidays.countries',
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
