@@ -1,18 +1,24 @@
 import sys
 from core import sqlutils, utils
 from core.diary import Ui_Diary
-from PySide6.QtGui import QCloseEvent, QKeyEvent, QPixmap, QIcon, QAction
-from PySide6.QtCore import QDate, Qt, QEvent, QLocale
-from PySide6.QtWidgets import QMainWindow, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QItemEditorFactory, QTableWidgetItem, QStyledItemDelegate
+from PySide6.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction
+from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal
+from PySide6.QtWidgets import QMainWindow, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView
 
 
-class QTextEditFactory(QItemEditorFactory):
+class TextEdit(QPlainTextEdit):
+    focusOut = Signal()
 
-    def __init__(self) -> None:
-        super().__init__()
+    def focusOutEvent(self, e: QFocusEvent) -> None:
+        text = self.toPlainText()
+        if self.text_last != text:
+            self.text_last = text
+            self.focusOut.emit()
+        return super().focusOutEvent(e)
 
-    def createEditor(self, userType, parent):
-        return QPlainTextEdit(parent)
+    def setPlainText(self, text: str) -> None:
+        self.text_last = text
+        return super().setPlainText(text)
 
 
 class DiaryWindow(Ui_Diary, QMainWindow):
@@ -45,9 +51,6 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         self.pb_save.setEnabled(False)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        delegate = QStyledItemDelegate()
-        delegate.setItemEditorFactory(QTextEditFactory())
-        self.tw_content.setItemDelegate(delegate)
         self.logo_path = utils.get_path(utils.load_config("style", "logo"))
         self.setWindowIcon(QPixmap(self.logo_path))
         self.add_tray()
@@ -118,12 +121,11 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         else:
             if date_ori.year() == date.year() and date_ori.month() == date.month():
                 self.disconnect_all()
-                for i in range(6):
-                    for j in range(7):
-                        item = self.tw_content.item(i, j)
-                        item.setSelected(False)
-                        if item.date == self.date:
-                            item.setSelected(True)
+                for row in range(6):
+                    for col in range(7):
+                        te = self.get_text_edit(row, col)
+                        if te.date == self.date:
+                            te.setFocus()
                 self.connect_all()
             else:
                 self.update_monthly_diary()
@@ -137,6 +139,17 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         self.view = self.VIEW_MONTHLY
         self.update_monthly_diary()
 
+    def get_text_edit(self, row, col):
+        te = self.tw_content.cellWidget(row, col)
+        if te is None:
+            te = TextEdit(self.tw_content)
+            # te.setFont(self.tw_content.font())
+            te.setContentsMargins(0, 0, 0, 0)
+            te.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+            self.tw_content.setCellWidget(row, col, te)
+            te.focusOut.connect(self.diary_edited)
+        return te
+
     def update_daily_diary(self):
         self.disconnect_all()
         tw = self.tw_content
@@ -144,15 +157,12 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         tw.setColumnCount(1)
         tw.setHorizontalHeaderLabels((self.WEEK_DAYS[self.date.dayOfWeek() - 1],))
         diary = self.diaries.get(sqlutils.date2int(self.date.toPython()))
-        item = tw.item(0, 0)
-        if item is None:
-            item = QTableWidgetItem()
-            tw.setItem(0, 0, item)
-        item.setText("")
+
+        te = self.get_text_edit(0, 0)
+        te.setPlainText("")
+        te.setEnabled(True)
         if diary is not None:
-            item.setText(diary[0])
-        item.setTextAlignment(Qt.AlignmentFlag.AlignTop & Qt.AlignmentFlag.AlignLeft)
-        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEnabled)
+            te.setPlainText(diary[0])
         self.connect_all()
 
     def update_monthly_diary(self):
@@ -167,21 +177,17 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         tw_labels = self.WEEK_DAYS[self.first_day_of_week - 1:] + self.WEEK_DAYS[:self.first_day_of_week - 1]
         tw.setHorizontalHeaderLabels(tw_labels)
         day = self.get_first_day_of_current_page()
-        for i in range(6):
-            for j in range(7):
+        for row in range(6):
+            for col in range(7):
                 _id = sqlutils.date2int(day.toPython())
-                item = tw.item(i, j)
-                if item is None:
-                    item = QTableWidgetItem()
-                    tw.setItem(i, j, item)
-                item.setText("")
+                te: TextEdit = self.get_text_edit(row, col)
+                te.setPlainText("")
                 if _id in self.diaries:
-                    item.setText(self.diaries[_id][0])
-                item.setTextAlignment(Qt.AlignmentFlag.AlignTop & Qt.AlignmentFlag.AlignLeft)
-                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEnabled)
+                    te.setPlainText(self.diaries[_id][0])
+                te.setEnabled(True)
                 if day_first.daysTo(day) < 0 or day_last.daysTo(day) > 0:
-                    item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
-                item.date = day
+                    te.setEnabled(False)
+                te.date = day
                 day = day.addDays(1)
         self.connect_all()
 
@@ -253,11 +259,8 @@ class DiaryWindow(Ui_Diary, QMainWindow):
                 updated = True
                 diary[1] = text_new
         else:
-            tw = self.tw_content
-            row = tw.currentRow()
-            col = tw.currentColumn()
-            item = tw.item(row, col)
-            text_new = item.text()
+            te: TextEdit = self.sender()
+            text_new = te.toPlainText()
             if diary[0] != text_new:
                 updated = True
                 diary[0] = text_new
@@ -272,8 +275,8 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         tw = self.tw_content
         row = tw.currentRow()
         col = tw.currentColumn()
-        item = tw.item(row, col)
-        text_new = item.text()
+        te = self.get_text_edit(row, col)
+        text_new = te.toPlainText()
         if diary[0] != text_new:
             diary[0] = text_new
         sqlutils.update_diaries(self.diaries)
