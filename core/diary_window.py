@@ -1,33 +1,19 @@
 import sys
-from core import sqlutils, utils
+
+from core import diary_utils, utils, sqlutils
 from core.diary import Ui_Diary
-from PySide6.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction
-from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal
-from PySide6.QtWidgets import QMainWindow, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView
+from core.interest_window import InterestWindow
+from core.qt_base import (BaseWindow, TextEdit, QKeyEvent, QPixmap, QIcon, QAction, QDate, Qt, QEvent,
+                          QLocale, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
 
 
-class TextEdit(QPlainTextEdit):
-    focusOut = Signal()
-
-    def focusOutEvent(self, e: QFocusEvent) -> None:
-        text = self.toPlainText()
-        if self.text_last != text:
-            self.text_last = text
-            self.focusOut.emit()
-        return super().focusOutEvent(e)
-
-    def setPlainText(self, text: str) -> None:
-        self.text_last = text
-        return super().setPlainText(text)
-
-
-class DiaryWindow(Ui_Diary, QMainWindow):
+class DiaryWindow(Ui_Diary, BaseWindow):
     VIEW_DAILY = 0
     VIEW_MONTHLY = 1
     WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
     def __init__(self):
-        QMainWindow.__init__(self)
+        BaseWindow.__init__(self)
         self.setupUi(self)
         self.connections = (
             (self.calendar.currentPageChanged, self.month_changed),
@@ -48,6 +34,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
 
     def init(self):
         self.set_i18n()
+        self.window_interest = None
         self.pb_save.setEnabled(False)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -61,7 +48,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         self.last_day_of_week = first_day_of_week + 6 if first_day_of_week < 2 else first_day_of_week - 1
         self.calendar.setFirstDayOfWeek(Qt.DayOfWeek(first_day_of_week))
         self.date = QDate.currentDate()
-        self.diaries = sqlutils.get_month_diary(self.date.year(), self.date.month())
+        self.diaries = diary_utils.get_month_diary(self.date.year(), self.date.month())
         self.calendar.setSelectedDate(self.date)
         self.set_daily_view()
         self.update_day_selected()
@@ -101,7 +88,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
 
     def month_changed(self):
         self.date = QDate(self.calendar.yearShown(), self.calendar.monthShown(), 1)
-        self.diaries = sqlutils.get_month_diary(self.date.year(), self.date.month())
+        self.diaries = diary_utils.get_month_diary(self.date.year(), self.date.month())
         self.calendar.selectedDate()
         if self.view == self.VIEW_DAILY:
             self.update_daily_diary()
@@ -115,7 +102,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         date_ori = self.date
         self.date = date
         if date_ori.year() != date.year() or date_ori.month() != date.month():
-            self.diaries = sqlutils.get_month_diary(self.date.year(), self.date.month())
+            self.diaries = diary_utils.get_month_diary(self.date.year(), self.date.month())
         if self.view == self.VIEW_DAILY:
             self.update_daily_diary()
         else:
@@ -156,7 +143,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         tw.setRowCount(1)
         tw.setColumnCount(1)
         tw.setHorizontalHeaderLabels((self.WEEK_DAYS[self.date.dayOfWeek() - 1],))
-        diary = self.diaries.get(sqlutils.date2int(self.date.toPython()))
+        diary = self.diaries.get(utils.date2int(self.date.toPython()))
 
         te = self.get_text_edit(0, 0)
         te.setPlainText("")
@@ -179,7 +166,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         day = self.get_first_day_of_current_page()
         for row in range(6):
             for col in range(7):
-                _id = sqlutils.date2int(day.toPython())
+                _id = utils.date2int(day.toPython())
                 te: TextEdit = self.get_text_edit(row, col)
                 te.setPlainText("")
                 if _id in self.diaries:
@@ -202,7 +189,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
                 date_info += "\n"
             date_info += holiday
         self.lb_lunar.setText(date_info)
-        diary = self.diaries.get(sqlutils.date2int(self.date.toPython()))
+        diary = self.diaries.get(utils.date2int(self.date.toPython()))
         if diary is None:
             self.le_location.setText("")
             self.le_weather.setText("")
@@ -229,20 +216,8 @@ class DiaryWindow(Ui_Diary, QMainWindow):
             day = day.addDays(-1)
         return day
 
-    def connect_all(self):
-        self.disconnect_all()
-        for ele, func in self.connections:
-            ele.connect(func)
-
-    def disconnect_all(self):
-        for ele, _ in self.connections:
-            try:
-                ele.disconnect()
-            except Exception:
-                pass
-
     def diary_edited(self):
-        _id = sqlutils.date2int(self.date.toPython())
+        _id = utils.date2int(self.date.toPython())
         if _id not in self.diaries:
             self.diaries[_id] = ["", "", ""]
         diary = self.diaries[_id]
@@ -265,10 +240,10 @@ class DiaryWindow(Ui_Diary, QMainWindow):
                 updated = True
                 diary[0] = text_new
         if self.cb_autosave.isChecked() and updated:
-            sqlutils.update_diary(_id, diary)
+            diary_utils.update_diary(_id, diary)
 
     def btn_save(self):
-        _id = sqlutils.date2int(self.date.toPython())
+        _id = utils.date2int(self.date.toPython())
         if _id not in self.diaries:
             self.diaries[_id] = ["", "", ""]
         diary = self.diaries[_id]
@@ -279,18 +254,18 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         text_new = te.toPlainText()
         if diary[0] != text_new:
             diary[0] = text_new
-        sqlutils.update_diaries(self.diaries)
+        diary_utils.update_diaries(self.diaries)
 
     def btn_export(self):
         file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
-            sqlutils.export_to_file(file)
+            diary_utils.exp(file)
 
     def btn_import(self):
         file, _ = QFileDialog.getOpenFileName(
             self, "Import from xlsx file [REPLACE!]", "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
-            sqlutils.import_from_file(file)
+            diary_utils.imp(file)
             self.month_changed()
 
     def tray_activated(self, reason):
@@ -307,10 +282,14 @@ class DiaryWindow(Ui_Diary, QMainWindow):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_S:
             self.btn_save()
+        elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_I:
+            if self.window_interest is None:
+                self.window_interest = InterestWindow(self)
+            self.window_interest.show()
         else:
             return super().keyPressEvent(event)
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self, event):
         event.ignore()
         return self.hide()
 
@@ -325,6 +304,8 @@ class DiaryWindow(Ui_Diary, QMainWindow):
             self.activateWindow()
         else:
             self.hide()
+            if self.window_interest is not None:
+                self.window_interest.hide()
 
     def close_window(self):
         sqlutils.close_connection()

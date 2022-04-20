@@ -117,3 +117,13 @@ def load_qss(app):
 def get_holiday(date: datetime.date, loc):
     holiday_dict = holidays.CountryHoliday(loc, years=date.year)
     return holiday_dict.get(date, None)
+
+
+def date2int(date: datetime.date, include_day=True):
+    if include_day:
+        return date.year * 10000 + date.month * 100 + date.day
+    return date.year * 100 + date.month
+
+
+def int2date(x: int):
+    return datetime.date(int(x / 10000), int((x % 10000) / 100), int(x % 100))
