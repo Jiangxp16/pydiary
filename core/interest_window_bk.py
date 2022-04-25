@@ -84,10 +84,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         if self.interest is None:
             return
         self.interests.remove(self.interest)
-        if self.multi_thread:
-            self.start_task(interest_utils.delete, id=self.interest.id)
-        else:
-            interest_utils.delete(id=self.interest.id)
+        self.start_task(interest_utils.delete, id=self.interest.id)
         self.interest = None
         self.update_table_interest()
 
@@ -147,10 +144,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
             interest.remark = value
         else:
             return
-        if self.multi_thread:
-            self.start_task(interest_utils.update, interest)
-        else:
-            interest_utils.update(interest)
+        self.start_task(interest_utils.update, interest)
         self.connect_all()
 
     def interest_edited(self):
@@ -187,10 +181,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self.set_table_value(self.tw_interest, row, 10, self.interest.remark)
         else:
             return
-        if self.multi_thread:
-            self.start_task(interest_utils.update, self.interest)
-        else:
-            interest_utils.update(self.interest)
+        self.start_task(interest_utils.update, self.interest)
 
     def update_table_interest(self):
         self.disconnect_all()

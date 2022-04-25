@@ -17,19 +17,27 @@ CREATE TABLE IF NOT EXISTS interest (
     remark TEXT NOT NULL
 );
 """
-# CREATE INDEX IF NOT EXISTS index_ns ON interest (name, sort);
+# sql_create_index = "CREATE INDEX IF NOT EXISTS index_ns ON interest (sort);"
 # CREATE INDEX IF NOT EXISTS index_update ON interest (updated);
 sqlutils.cur.execute(sql_create)
 
+sql_update = "UPDATE interest SET `sort`=7 WHERE `sort`=0"
+sqlutils.cur.execute(sql_update)
+sqlutils.conn.commit()
+
 
 class Interest:
+
+    fields = ["added", "updated", "name", "sort", "progress", "publish",
+              "date", "score_db", "score_imdb", "score", "remark"]
+
     def __init__(self, id=None, added=None, updated=None, name=None, sort=None, progress=None, publish=None,
                  date=None, score_db=None, score_imdb=None, score=None, remark=None):
         self.id = id
         self.added = added or utils.date2int(datetime.date.today())
         self.updated = updated or 0
         self.name = name or ""
-        self.sort = sort or 0
+        self.sort = sort or 7
         self.progress = progress or ""
         self.publish = publish or 0
         self.date = date or 0
@@ -41,6 +49,23 @@ class Interest:
     def params(self):
         return (self.added, self.updated, self.name, self.sort, self.progress, self.publish,
                 self.date, self.score_db, self.score_imdb, self.score, self.remark)
+
+    def set_param(self, field, value):
+        if isinstance(field, str) and hasattr(self, field):
+            setattr(self, field, value)
+            return True
+        elif isinstance(field, int):
+            if field >= 0 and field <= len(self.fields):
+                return self.set_param(self.fields[field], value)
+        return False
+
+    def get_param(self, field):
+        if isinstance(field, str) and hasattr(self, field):
+            return getattr(self, field)
+        elif isinstance(field, int):
+            if field >= 0 and field <= len(self.fields):
+                return self.get_param(self.fields[field])
+        return None
 
     def __str__(self):
         return str(self.params())
