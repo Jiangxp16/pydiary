@@ -10,7 +10,6 @@ from core.qt_base import (BaseWindow, TextEdit, QKeyEvent, QPixmap, QIcon, QActi
 class DiaryWindow(Ui_Diary, BaseWindow):
     VIEW_DAILY = 0
     VIEW_MONTHLY = 1
-    WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
     def __init__(self):
         BaseWindow.__init__(self)
@@ -33,13 +32,14 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.connect_all()
 
     def init(self):
+        self.logo_path = utils.get_path(utils.load_config("style", "logo"))
+        self.setWindowIcon(QPixmap(self.logo_path))
+        self.WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         self.set_i18n()
         self.window_interest = None
         self.pb_save.setEnabled(False)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.logo_path = utils.get_path(utils.load_config("style", "logo"))
-        self.setWindowIcon(QPixmap(self.logo_path))
         self.add_tray()
         first_day_of_week = int(utils.load_config("global", "first_day_of_week")) % 7
         if first_day_of_week == 0:
@@ -61,7 +61,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         if self.language == "zh":
             self.calendar.setLocale(self.locale())
             self.setWindowTitle("日记")
-            self.WEEK_DAYS[:] = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+            self.WEEK_DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
             self.pb_daily.setText("日视图")
             self.pb_monthly.setText("月视图")
             self.pb_save.setText("保存")
@@ -76,10 +76,15 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.tray.setIcon(QIcon(self.logo_path))
         tray_menu = QMenu(self)
         action_show = QAction("Show/Hide", tray_menu)
+        action_interest = QAction("Interest", tray_menu)
         action_exit = QAction("Exit", tray_menu)
         action_show.triggered.connect(self.show_or_hide_window)
         action_exit.triggered.connect(self.close_window)
+        action_interest.triggered.connect(self.open_interest_window)
         tray_menu.addAction(action_show)
+        tray_menu.addSeparator()
+        tray_menu.addAction(action_interest)
+        tray_menu.addSeparator()
         tray_menu.addAction(action_exit)
         self.tray.setContextMenu(tray_menu)
         self.tray.setToolTip("Diary")
@@ -110,7 +115,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 self.disconnect_all()
                 for row in range(6):
                     for col in range(7):
-                        te = self.get_text_edit(row, col)
+                        te = self.get_table_text_edit(self.tw_content, row, col)
+                        self.reconnect(te.focusOut, self.diary_edited)
                         if te.date == self.date:
                             te.setFocus()
                 self.connect_all()
@@ -126,17 +132,6 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.view = self.VIEW_MONTHLY
         self.update_monthly_diary()
 
-    def get_text_edit(self, row, col):
-        te = self.tw_content.cellWidget(row, col)
-        if te is None:
-            te = TextEdit(self.tw_content)
-            # te.setFont(self.tw_content.font())
-            te.setContentsMargins(0, 0, 0, 0)
-            te.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-            self.tw_content.setCellWidget(row, col, te)
-            te.focusOut.connect(self.diary_edited)
-        return te
-
     def update_daily_diary(self):
         self.disconnect_all()
         tw = self.tw_content
@@ -144,12 +139,12 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         tw.setColumnCount(1)
         tw.setHorizontalHeaderLabels((self.WEEK_DAYS[self.date.dayOfWeek() - 1],))
         diary = self.diaries.get(utils.date2int(self.date.toPython()))
-
-        te = self.get_text_edit(0, 0)
+        te = self.get_table_text_edit(tw, 0, 0)
+        self.reconnect(te.focusOut, self.diary_edited)
         te.setPlainText("")
         te.setEnabled(True)
         if diary is not None:
-            te.setPlainText(diary[0])
+            te.setPlainText(diary.content)
         self.connect_all()
 
     def update_monthly_diary(self):
@@ -167,10 +162,11 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         for row in range(6):
             for col in range(7):
                 _id = utils.date2int(day.toPython())
-                te: TextEdit = self.get_text_edit(row, col)
+                te = self.get_table_text_edit(tw, row, col)
+                self.reconnect(te.focusOut, self.diary_edited)
                 te.setPlainText("")
                 if _id in self.diaries:
-                    te.setPlainText(self.diaries[_id][0])
+                    te.setPlainText(self.diaries[_id].content)
                 te.setEnabled(True)
                 if day_first.daysTo(day) < 0 or day_last.daysTo(day) > 0:
                     te.setEnabled(False)
@@ -194,8 +190,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.le_location.setText("")
             self.le_weather.setText("")
         else:
-            self.le_weather.setText(diary[1])
-            self.le_location.setText(diary[2])
+            self.le_weather.setText(diary.weather)
+            self.le_location.setText(diary.location)
 
     def diary_selected_changed(self):
         if self.view == self.VIEW_DAILY:
@@ -219,42 +215,49 @@ class DiaryWindow(Ui_Diary, BaseWindow):
     def diary_edited(self):
         _id = utils.date2int(self.date.toPython())
         if _id not in self.diaries:
-            self.diaries[_id] = ["", "", ""]
+            self.diaries[_id] = diary_utils.Diary(_id)
         diary = self.diaries[_id]
         obj = self.sender()
         updated = False
         if obj == self.le_location:
             text_new = self.le_location.text()
-            if diary[2] != text_new:
+            if diary.location != text_new:
                 updated = True
-                diary[2] = text_new
+                diary.location = text_new
         elif obj == self.le_weather:
             text_new = self.le_weather.text()
-            if diary[1] != text_new:
+            if diary.weather != text_new:
                 updated = True
-                diary[1] = text_new
+                diary.weather = text_new
         else:
-            te: TextEdit = self.sender()
+            te: TextEdit = obj
             text_new = te.toPlainText()
-            if diary[0] != text_new:
+            if diary.content != text_new:
                 updated = True
-                diary[0] = text_new
+                diary.content = text_new
         if self.cb_autosave.isChecked() and updated:
-            diary_utils.update_diary(_id, diary)
+            if self.multi_thread:
+                self.start_task(diary_utils.update_diary, diary)
+            else:
+                diary_utils.update_diary(diary)
 
     def btn_save(self):
         _id = utils.date2int(self.date.toPython())
         if _id not in self.diaries:
-            self.diaries[_id] = ["", "", ""]
+            self.diaries[_id] = diary_utils.Diary(_id)
         diary = self.diaries[_id]
         tw = self.tw_content
         row = tw.currentRow()
         col = tw.currentColumn()
-        te = self.get_text_edit(row, col)
+        te = self.get_table_text_edit(tw, row, col)
+        self.reconnect(te.focusOut, self.diary_edited)
         text_new = te.toPlainText()
-        if diary[0] != text_new:
-            diary[0] = text_new
-        diary_utils.update_diaries(self.diaries)
+        if diary.content != text_new:
+            diary.content = text_new
+        if self.multi_thread:
+            self.start_task(diary_utils.update_diaries, self.diaries)
+        else:
+            diary_utils.update_diaries(self.diaries)
 
     def btn_export(self):
         file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "", filter="Excel File (*.xlsx);; All Files (*);")
@@ -272,26 +275,39 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
             self.show_or_hide_window()
 
-    def changeEvent(self, event):
-        if event.type() == QEvent.WindowStateChange:
-            if self.windowState() & Qt.WindowMinimized:
-                event.ignore()
-                return self.hide()
-        return super().changeEvent(event)
+    def open_interest_window(self):
+        if self.window_interest is None:
+            self.window_interest = InterestWindow()
+        if self.window_interest.isHidden():
+            if self.window_interest.isMaximized():
+                self.window_interest.showMaximized()
+            elif self.window_interest.isMinimized():
+                self.window_interest.showNormal()
+            else:
+                self.window_interest.show()
+            self.window_interest.activateWindow()
+        else:
+            self.window_interest.hide()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_S:
             self.btn_save()
         elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_I:
-            if self.window_interest is None:
-                self.window_interest = InterestWindow(self)
-            self.window_interest.show()
+            self.open_interest_window()
         else:
             return super().keyPressEvent(event)
 
     def closeEvent(self, event):
         event.ignore()
         return self.hide()
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.WindowStateChange:
+            if self.windowState() & Qt.WindowMinimized:
+                event.ignore()
+                self.hide()
+                return
+        return super().changeEvent(event)
 
     def show_or_hide_window(self):
         if self.isHidden():
@@ -304,8 +320,6 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.activateWindow()
         else:
             self.hide()
-            if self.window_interest is not None:
-                self.window_interest.hide()
 
     def close_window(self):
         sqlutils.close_connection()

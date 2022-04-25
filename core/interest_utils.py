@@ -51,7 +51,11 @@ def get_last():
     return Interest(*rs)
 
 
-def add(interest):
+def add(interest=None, **kwargs):
+    if interest is None:
+        interest = Interest(**kwargs)
+        interest.updated = utils.date2int(datetime.date.today())
+        interest.added = utils.date2int(datetime.date.today())
     if sqlutils.insert("INSERT INTO interest (`added`, `updated`, `name`, `sort`, `progress`, `publish`, `date`, \
                            `score_db`, `score_imdb`, `score`, `remark`) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                        interest.params()):
@@ -66,18 +70,12 @@ def add_many(interests):
     return sqlutils.insert_many(sql_cmd, data_list)
 
 
-def add_new(**kwargs):
-    interest = Interest(**kwargs)
-    interest.updated = utils.date2int(datetime.date.today())
-    interest.added = utils.date2int(datetime.date.today())
-    return add(interest)
-
-
 def get_list_by(**kwargs):
     if "sort" in kwargs and kwargs["sort"] == 0:
         kwargs.pop("sort")
     interests = []
-    sql_cmd = "SELECT * FROM interest"
+    sql_cmd = "SELECT `id`, `added`, `updated`, `name`, `sort`, `progress`, `publish`, `date`, \
+                           `score_db`, `score_imdb`, `score`, `remark` FROM interest"
     args = []
     if len(kwargs) > 0:
         sql_cmd += " WHERE "
@@ -92,7 +90,7 @@ def get_list_by(**kwargs):
     return interests
 
 
-def update(interest):
+def update(interest: Interest):
     interest.updated = utils.date2int(datetime.date.today())
     return sqlutils.update("UPDATE interest SET `added`=?, `updated`=?, `name`=?, `sort`=?, `progress`=?, `publish`=?, `date`=?,\
                            `score_db`=?, `score_imdb`=?, `score`=?, `remark`=? WHERE `id`=?", (*interest.params(), interest.id))

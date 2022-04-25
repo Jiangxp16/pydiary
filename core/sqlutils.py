@@ -2,7 +2,7 @@ import sqlite3
 from core import utils
 db_name = utils.load_config("global", "db_name")
 # db_path = utils.get_path(db_name)
-conn = sqlite3.connect(db_name)
+conn = sqlite3.connect(db_name, check_same_thread=False)
 cur = conn.cursor()
 
 

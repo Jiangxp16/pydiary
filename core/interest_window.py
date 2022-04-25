@@ -1,7 +1,7 @@
 from core.interest import Ui_Interest
 
 from core import interest_utils, utils
-from core.qt_base import BaseWindow, QFileDialog, QHeaderView, QMessageBox, QKeyEvent, Qt
+from core.qt_base import BaseWindow, QTableWidget, TextEdit, QSizePolicy, QEvent, QFileDialog, QHeaderView, QMessageBox, QKeyEvent, Qt, QPixmap
 
 
 class InterestWindow(Ui_Interest, BaseWindow):
@@ -23,19 +23,24 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.connect_all()
 
     def init(self):
-        self.sorts = ["ALL", "MOVIE", "TV", "COMIC", "GAME", "BOOK", "MUSIC", "OTHERS"]
+        self.logo_path = utils.get_path(utils.load_config("style", "logo"))
+        self.setWindowIcon(QPixmap(self.logo_path))
+        self.sorts = ["All", "Movie", "TV", "Comic", "Game", "Book", "Music", "Others"]
         self.sort = 0
         self.filter = ''
-        self.row_interest = 0
+        self.row_interest = -1
         self.interests: list[interest_utils.Interest] = interest_utils.get_list_by(sort=self.sort)
+        self.interest = None
         self.cb_sort.addItems(self.sorts)
         self.cb_sort.setCurrentIndex(self.sort)
         self.tw_interest.setColumnCount(11)
-        self.tw_interest.setHorizontalHeaderLabels(["id", "Added", "Name", "Sort", "Progress",
-                                                    "Publish", "Watched/Played", "Score (db)",
-                                                    "Score (imdb)", "Score", "Remark"])
+        self.tw_interest.setHorizontalHeaderLabels(["id", "Added", "Name", "Sort", "Prog",
+                                                    "Pub", "Last", "Score\r\n(db)",
+                                                    "Score\r\n(imdb)", "Score", "Remark"])
+        for col in range(11):
+            self.tw_interest.setColumnWidth(col, 80)
+        self.tw_interest.setColumnWidth(2, 360)
         self.tw_interest.hideColumn(0)
-        self.tw_interest.setTextElideMode(Qt.TextElideMode.ElideNone)
         self.set_i18n()
         self.update_table_interest()
 
@@ -47,8 +52,8 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self.cb_sort.addItems(self.sorts)
             self.cb_sort.setCurrentIndex(self.sort)
             self.tw_interest.setHorizontalHeaderLabels(["id", "添加日期", "名称", "分类", "进度",
-                                                        "发布日期", "最后观看/游玩", "评分 (db)",
-                                                        "评分 (imdb)", "评分", "备注"])
+                                                        "发布", "最后日期", "评分\r\n(db)",
+                                                        "评分\r\n(imdb)", "评分", "备注"])
             self.le_filter.setPlaceholderText("搜索...")
             self.pb_exp.setText("导出")
             self.pb_imp.setText("导入")
@@ -68,19 +73,22 @@ class InterestWindow(Ui_Interest, BaseWindow):
             return super().keyPressEvent(event)
 
     def btn_add(self):
-        self.interests.append(interest_utils.add_new(sort=self.sort))
+        if self.sort > 0:
+            self.interest = interest_utils.add(sort=self.sort)
+        else:
+            self.interest = interest_utils.add(sort=len(self.sorts) - 1)
+        self.interests.append(self.interest)
         self.update_table_interest()
-        self.row_interest = len(self.interests) - 1
 
     def btn_del(self):
-        if self.row_interest < 0:
+        if self.interest is None:
             return
-        id_row = self.get_table_value(self.tw_interest, self.row_interest, 0)
-        for i in range(len(self.interests)):
-            if self.interests[i].id == id_row:
-                self.interests.pop(i)
-                break
-        interest_utils.delete(id=id_row)
+        self.interests.remove(self.interest)
+        if self.multi_thread:
+            self.start_task(interest_utils.delete, id=self.interest.id)
+        else:
+            interest_utils.delete(id=self.interest.id)
+        self.interest = None
         self.update_table_interest()
 
     def btn_imp(self):
@@ -103,6 +111,11 @@ class InterestWindow(Ui_Interest, BaseWindow):
 
     def interest_sel_changed(self):
         self.row_interest = self.tw_interest.currentRow()
+        id_row = self.get_table_value(self.tw_interest, self.row_interest, 0)
+        for i in range(len(self.interests)):
+            if self.interests[i].id == id_row:
+                self.interest = self.interests[i]
+                break
 
     def filter_changed(self):
         filter_new = self.le_filter.text()
@@ -114,17 +127,10 @@ class InterestWindow(Ui_Interest, BaseWindow):
     def interest_edited(self, row, col):
         self.disconnect_all()
         tw = self.tw_interest
-        id_row = self.get_table_value(tw, row, 0)
-        for i in self.interests:
-            if i.id == id_row:
-                interest = i
-                break
+        interest = self.interest
         value = self.get_table_value(tw, row, col)
         if col == 2:
             interest.name = value
-        elif col == 3:
-            interest.sort = self.sorts.index(value) if value in self.sorts else 0
-            self.set_table_value(tw, row, col, self.sorts[interest.sort])
         elif col == 4:
             interest.progress = value
         elif col == 5:
@@ -139,36 +145,73 @@ class InterestWindow(Ui_Interest, BaseWindow):
             interest.score = value
         elif col == 10:
             interest.remark = value
-        interest_utils.update(interest)
-        # self.set_table_value(tw, row, 11, interest.updated)
+        else:
+            return
+        if self.multi_thread:
+            self.start_task(interest_utils.update, interest)
+        else:
+            interest_utils.update(interest)
         self.connect_all()
+
+    def sort_edited(self):
+        if not self.interest:
+            return
+        cb = self.sender()
+        self.interest.sort = cb.currentIndex() + 1
+        self.set_table_value(self.tw_interest, self.row_interest, 3, self.sorts[self.interest.sort])
+        if self.multi_thread:
+            self.start_task(interest_utils.update, self.interest)
+        else:
+            interest_utils.update(self.interest)
 
     def update_table_interest(self):
         self.disconnect_all()
         tw = self.tw_interest
+        tw.clearContents()
         tw.setRowCount(len(self.interests))
         tw.setSortingEnabled(False)
-        tw.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         for row in range(tw.rowCount()):
             interest = self.interests[row]
             self.set_table_value(tw, row, 0, interest.id)
-            self.set_table_value(tw, row, 1, interest.added, False)
+            self.set_table_value(tw, row, 1, interest.added, False, center=True)
             self.set_table_value(tw, row, 2, interest.name)
-            self.set_table_value(tw, row, 3, self.sorts[interest.sort])
-            self.set_table_value(tw, row, 4, interest.progress)
-            self.set_table_value(tw, row, 5, interest.publish)
-            self.set_table_value(tw, row, 6, interest.date)
-            self.set_table_value(tw, row, 7, float(interest.score_db))
-            self.set_table_value(tw, row, 8, float(interest.score_imdb))
-            self.set_table_value(tw, row, 9, float(interest.score))
+            cb_sort = self.get_table_combo(tw, row, 3)
+            cb_sort.clear()
+            cb_sort.addItems(self.sorts[1:])
+            cb_sort.setCurrentIndex(interest.sort - 1 if interest.sort > 0 else len(self.sorts) - 2)
+            self.reconnect(cb_sort.currentIndexChanged, self.sort_edited)
+            self.set_table_value(tw, row, 3, self.sorts[interest.sort], center=True)
+            self.set_table_value(tw, row, 4, interest.progress, center=True)
+            self.set_table_value(tw, row, 5, interest.publish, center=True)
+            self.set_table_value(tw, row, 6, interest.date, center=True)
+            self.set_table_value(tw, row, 7, float(interest.score_db), center=True)
+            self.set_table_value(tw, row, 8, float(interest.score_imdb), center=True)
+            self.set_table_value(tw, row, 9, float(interest.score), center=True)
             self.set_table_value(tw, row, 10, interest.remark)
             # self.set_table_value(tw, row, 11, interest.updated, False)
-            if self.filter and self.filter not in str(interest):
+            if self.filter and self.filter.upper() not in str(interest).upper():
                 tw.setRowHidden(row, True)
             else:
                 tw.setRowHidden(row, False)
         tw.setSortingEnabled(True)
-        for col in range(tw.columnCount()):
-            tw.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
-        tw.selectRow(self.row_interest)
+        if self.interest is not None:
+            for row in range(tw.rowCount()):
+                if self.get_table_value(tw, row, 0) == interest.id:
+                    self.tw_interest.selectRow(row)
+                    self.row_interest = row
+                    break
+        elif self.row_interest > -1 and tw.rowCount() > 0:
+            self.tw_interest.selectRow(self.row_interest)
+            self.interest_sel_changed()
         self.connect_all()
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.WindowStateChange:
+            if self.windowState() & Qt.WindowMinimized:
+                event.ignore()
+                return self.hide()
+        return super().changeEvent(event)
+
+    def closeEvent(self, event):
+        event.ignore()
+        return self.hide()

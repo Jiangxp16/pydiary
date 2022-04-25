@@ -67,6 +67,7 @@ def load_config(seg, key=None):
         "global": {
             "db_name": "diary.db",
             "first_day_of_week": 7,
+            "multi_thread": 1,
         },
         "style": {
             "logo": "style/logo.png",
