@@ -101,40 +101,46 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pb_exp">
+       <widget class="QPushButton" name="pb_imp">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>40</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>50</width>
+          <width>40</width>
           <height>16777215</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Ctrl+I: IMPORT</string>
+        </property>
         <property name="text">
-         <string>EXP</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pb_imp">
+       <widget class="QPushButton" name="pb_exp">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>40</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>50</width>
+          <width>40</width>
           <height>16777215</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Ctrl+E: EXPORT</string>
+        </property>
         <property name="text">
-         <string>IMP</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -149,18 +155,21 @@
        <widget class="QPushButton" name="pb_add">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>40</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>30</width>
+          <width>40</width>
           <height>16777215</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Ctrl+N</string>
+        </property>
         <property name="text">
-         <string>+</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -168,18 +177,21 @@
        <widget class="QPushButton" name="pb_del">
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>40</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>30</width>
+          <width>40</width>
           <height>16777215</height>
          </size>
         </property>
+        <property name="toolTip">
+         <string>Ctrl+D</string>
+        </property>
         <property name="text">
-         <string>-</string>
+         <string/>
         </property>
        </widget>
       </item>

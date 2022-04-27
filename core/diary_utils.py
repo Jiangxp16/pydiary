@@ -1,6 +1,6 @@
-import datetime
 from typing import OrderedDict
-from core import sqlutils, utils
+
+from core import sqlutils
 
 sql_create = """
 CREATE TABLE IF NOT EXISTS diary (
@@ -51,7 +51,7 @@ def get_by(**kwargs):
     return Diary(*rs)
 
 
-def get_between_dates(date1, date2) -> list[Diary]:
+def get_between_dates(date1=0, date2=99999999) -> list[Diary]:
     rs_list = sqlutils.select("SELECT `id`, `content`, `weather`, `location` FROM diary WHERE id BETWEEN ? AND ? ORDER BY id",
                               (date1, date2))
     diaries = []
@@ -104,13 +104,13 @@ def update_diaries(diary_dict: dict[int, Diary]):
 
 
 def exp(file):
-    diaries = get_between_dates(0, 99999999)
+    diaries = get_between_dates()
     from openpyxl import Workbook
     wb = Workbook()
     ws = wb.active
     ws.append(("Date", "Content", "Weather", "Location"))
     for diary in diaries:
-        ws.append([diary.id, *diary.params()])
+        ws.append((diary.id, *diary.params()))
     wb.save(file)
 
 

@@ -71,6 +71,13 @@ def load_config(seg, key=None):
         },
         "style": {
             "logo": "style/logo.png",
+            "icon_imp": "style/imp.png",
+            "icon_exp": "style/exp.png",
+            "icon_save": "style/save.png",
+            "icon_add": "style/add.png",
+            "icon_del": "style/del.png",
+            "icon_month": "style/month.png",
+            "icon_day": "style/day.png",
             "font": "Times New Roman,Kaiti",
             "font_size": 18,
         }
@@ -128,3 +135,10 @@ def date2int(date: datetime.date, include_day=True):
 
 def int2date(x: int):
     return datetime.date(int(x / 10000), int((x % 10000) / 100), int(x % 100))
+
+
+def get_last_day(year, month):
+    day_last = datetime.date(year, month, 28)
+    while (day_last + datetime.timedelta(days=1)).month == day_last.month:
+        day_last = day_last + datetime.timedelta(days=1)
+    return day_last
