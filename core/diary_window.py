@@ -2,8 +2,8 @@ import sys
 
 from core import diary_utils, utils, sqlutils
 from core.diary import Ui_Diary
-from core.qt_base import (BaseWindow, TextEdit, QKeyEvent, QPixmap, QIcon, QAction, QDate, Qt, QEvent,
-                          QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView, QStyle)
+from core.qt_base import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
+                          QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
 
 
 class DiaryWindow(Ui_Diary, BaseWindow):
@@ -39,13 +39,13 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.pb_monthly.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_month"))))
         self.pb_daily.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_day"))))
         self.WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        self.add_tray()
         self.set_i18n()
         self.window_interest = None
         self.window_bill = None
         self.pb_save.setEnabled(False)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.add_tray()
         first_day_of_week = int(utils.load_config("global", "first_day_of_week")) % 7
         if first_day_of_week == 0:
             first_day_of_week += 7
@@ -72,26 +72,39 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.cb_autosave.setText("自动")
             self.lb_location.setText("地点")
             self.lb_weather.setText("天气")
+            self.action_diary.setText("日记")
+            self.action_interest.setText("兴趣")
+            self.action_bill.setText("账单")
+            self.action_exit.setText("退出")
 
     def add_tray(self):
         self.tray = QSystemTrayIcon(self)
         self.tray.setIcon(QIcon(self.logo_path))
         tray_menu = QMenu(self)
-        action_show = QAction("Show/Hide", tray_menu)
-        action_interest = QAction("Interest", tray_menu)
-        action_bill = QAction("Bill", tray_menu)
-        action_exit = QAction("Exit", tray_menu)
-        action_show.triggered.connect(self.show_or_hide_window)
-        action_exit.triggered.connect(self.close_window)
-        action_interest.triggered.connect(self.open_interest_window)
-        action_bill.triggered.connect(self.open_bill_window)
-        tray_menu.addAction(action_show)
-        tray_menu.addSeparator()
-        tray_menu.addAction(action_interest)
-        tray_menu.addSeparator()
-        tray_menu.addAction(action_bill)
-        tray_menu.addSeparator()
-        tray_menu.addAction(action_exit)
+        tray_menu.setStyleSheet("color:black; background:white;\
+                                selection-background-color:#e4e4e4;\
+                                font-family:Arial,Microsoft YaHei; font-size:15px;")
+
+        self.action_diary = QAction("&Diary", tray_menu)
+        self.action_interest = QAction("&Interest", tray_menu)
+        self.action_bill = QAction("&Bill", tray_menu)
+        self.action_exit = QAction("&Exit", tray_menu)
+
+        self.action_diary.setIcon(QIcon(self.logo_path))
+        self.action_interest.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_interest"))))
+        self.action_bill.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_bill"))))
+        self.action_exit.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exit"))))
+
+        self.action_diary.triggered.connect(self.show_or_hide_window)
+        self.action_interest.triggered.connect(self.open_interest_window)
+        self.action_bill.triggered.connect(self.open_bill_window)
+        self.action_exit.triggered.connect(self.close_window)
+
+        tray_menu.addAction(self.action_diary)
+        tray_menu.addAction(self.action_interest)
+        tray_menu.addAction(self.action_bill)
+        tray_menu.addAction(self.action_exit)
+
         self.tray.setContextMenu(tray_menu)
         self.tray.setToolTip("Diary")
         self.tray.activated.connect(self.tray_activated)

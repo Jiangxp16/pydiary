@@ -1,6 +1,6 @@
-from PySide6.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction
+from PySide6.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction, QFont
 from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable
-from PySide6.QtWidgets import QMainWindow, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle
+from PySide6.QtWidgets import QMainWindow, QWidgetAction, QLabel, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle
 
 from core import utils
 
@@ -93,6 +93,10 @@ class BaseWindow(QMainWindow):
     def get_table_combo(self, table: QTableWidget, row, col, labels=None) -> QComboBox:
         cb: QComboBox = self.get_table_widget(table, row, col, QComboBox)
         if labels is not None:
+            try:
+                cb.currentIndexChanged.disconnect()
+            except Exception:
+                pass
             cb.clear()
             cb.addItems(labels)
         return cb

@@ -11,7 +11,7 @@ Build one-file mode which easily to share.
 ```
 pyinstaller build_f.spec -y --distpath "E:\Program Files\Diary"
 ```
-Or build a directory. Attention that it will empty original directory. It would be better to control file size if built with multiple exes in this mode. Delete unused modules and dlls after building.
+Or build a directory. Attention that it will empty original directory. It would be better to control file size if built with multiple exes in this mode.
 ```
 pyinstaller build_d.spec -y --distpath "E:\Program Files\Diary"
 ```
@@ -35,10 +35,21 @@ db_name=diary.db
 first_day_of_week=7
 language=zh
 multi_thread=1
+hide_on_startup=0
 
 [style]
 font=Times New Roman,Kaiti
 font_size=18
 logo=style/logo.png
+icon_interest=style/interest.png
+icon_bill=style/bill.png
+icon_exit=style/exit.png
+icon_imp=style/imp.png
+icon_exp=style/exp.png
+icon_save=style/save.png
+icon_add=style/add.png
+icon_del=style/del.png
+icon_month=style/month.png
+icon_day=style/day.png
 qss=style/default.qss
 ```

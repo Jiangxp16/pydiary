@@ -1,7 +1,7 @@
 from core.interest import Ui_Interest
 
 from core import interest_utils, utils
-from core.qt_base import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QPixmap, QIcon
+from core.qt_base import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
 
 
 class InterestWindow(Ui_Interest, BaseWindow):
@@ -23,7 +23,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.connect_all()
 
     def init(self):
-        self.setWindowIcon(QPixmap(utils.get_path(utils.load_config("style", "logo"))))
+        self.setWindowIcon(QIcon(utils.get_path(utils.load_config("style", "icon_interest"))))
         self.pb_imp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_imp"))))
         self.pb_exp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exp"))))
         self.pb_add.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_add"))))
@@ -155,7 +155,6 @@ class InterestWindow(Ui_Interest, BaseWindow):
     def update_table_interest(self):
         self.disconnect_all()
         tw = self.tw_interest
-        tw.clearContents()
         tw.setRowCount(len(self.interests))
         tw.setSortingEnabled(False)
         for row in range(tw.rowCount()):
