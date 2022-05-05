@@ -1,6 +1,7 @@
 import datetime
 
-from core import sqlutils, utils
+from core.util import sqlutils
+from core.util import utils
 
 sql_create = """
 CREATE TABLE IF NOT EXISTS bill (
@@ -37,8 +38,10 @@ class Bill:
 
 
 def get_last():
-    rs = sqlutils.select_one("SELECT * FROM bill where id = last_insert_rowid()")
-    return Bill(*rs)
+    rs = sqlutils.get_last("bill")
+    if rs is not None:
+        return Bill(*rs)
+    return None
 
 
 def add(bill=None, **kwargs):

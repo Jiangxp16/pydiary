@@ -1,7 +1,8 @@
-from core.interest import Ui_Interest
+from core.interest.interest import Ui_Interest
 
-from core import interest_utils, utils
-from core.qt_base import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
+from core.interest import interest_utils
+from core.util.qtutils import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
+from core.util import utils
 
 
 class InterestWindow(Ui_Interest, BaseWindow):
@@ -42,7 +43,10 @@ class InterestWindow(Ui_Interest, BaseWindow):
                                                     "Score\r\n(imdb)", "Score", "Remark"])
         for col in range(11):
             self.tw_interest.setColumnWidth(col, 80)
+        self.tw_interest.setColumnWidth(1, 100)
         self.tw_interest.setColumnWidth(2, 360)
+        self.tw_interest.setColumnWidth(5, 90)
+        self.tw_interest.setColumnWidth(6, 90)
         self.tw_interest.hideColumn(0)
         self.set_i18n()
         self.update_table_interest()

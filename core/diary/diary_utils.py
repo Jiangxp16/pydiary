@@ -1,6 +1,6 @@
 from typing import OrderedDict
 
-from core import sqlutils
+from core.util import sqlutils
 
 sql_create = """
 CREATE TABLE IF NOT EXISTS diary (

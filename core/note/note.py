@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'interest.ui'
+## Form generated from reading UI file 'note.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.2
 ##
@@ -20,12 +20,12 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFram
     QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
     QTableWidgetItem, QVBoxLayout, QWidget)
 
-class Ui_Interest(object):
-    def setupUi(self, Interest):
-        if not Interest.objectName():
-            Interest.setObjectName(u"Interest")
-        Interest.resize(1280, 720)
-        self.centralwidget = QWidget(Interest)
+class Ui_Note(object):
+    def setupUi(self, Note):
+        if not Note.objectName():
+            Note.setObjectName(u"Note")
+        Note.resize(800, 800)
+        self.centralwidget = QWidget(Note)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -35,29 +35,29 @@ class Ui_Interest(object):
 
         self.horizontalLayout_2.addItem(self.hs_sort)
 
-        self.cb_sort = QComboBox(self.centralwidget)
-        self.cb_sort.setObjectName(u"cb_sort")
+        self.cb_state = QComboBox(self.centralwidget)
+        self.cb_state.setObjectName(u"cb_state")
 
-        self.horizontalLayout_2.addWidget(self.cb_sort)
+        self.horizontalLayout_2.addWidget(self.cb_state)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
-        self.tw_interest = QTableWidget(self.centralwidget)
-        self.tw_interest.setObjectName(u"tw_interest")
-        self.tw_interest.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
-        self.tw_interest.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tw_interest.setTextElideMode(Qt.ElideNone)
-        self.tw_interest.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tw_interest.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tw_interest.setSortingEnabled(True)
-        self.tw_interest.horizontalHeader().setCascadingSectionResizes(True)
-        self.tw_interest.horizontalHeader().setDefaultSectionSize(60)
-        self.tw_interest.horizontalHeader().setProperty("showSortIndicator", False)
-        self.tw_interest.horizontalHeader().setStretchLastSection(True)
-        self.tw_interest.verticalHeader().setVisible(True)
+        self.tw_note = QTableWidget(self.centralwidget)
+        self.tw_note.setObjectName(u"tw_note")
+        self.tw_note.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.tw_note.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tw_note.setTextElideMode(Qt.ElideNone)
+        self.tw_note.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.tw_note.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.tw_note.setSortingEnabled(True)
+        self.tw_note.horizontalHeader().setCascadingSectionResizes(True)
+        self.tw_note.horizontalHeader().setDefaultSectionSize(60)
+        self.tw_note.horizontalHeader().setProperty("showSortIndicator", False)
+        self.tw_note.horizontalHeader().setStretchLastSection(True)
+        self.tw_note.verticalHeader().setVisible(True)
 
-        self.verticalLayout.addWidget(self.tw_interest)
+        self.verticalLayout.addWidget(self.tw_note)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -109,30 +109,30 @@ class Ui_Interest(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        Interest.setCentralWidget(self.centralwidget)
+        Note.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(Interest)
+        self.retranslateUi(Note)
 
-        QMetaObject.connectSlotsByName(Interest)
+        QMetaObject.connectSlotsByName(Note)
     # setupUi
 
-    def retranslateUi(self, Interest):
-        Interest.setWindowTitle(QCoreApplication.translate("Interest", u"Interest", None))
-        self.le_filter.setPlaceholderText(QCoreApplication.translate("Interest", u"Search here.", None))
+    def retranslateUi(self, Note):
+        Note.setWindowTitle(QCoreApplication.translate("Note", u"NOTE", None))
+        self.le_filter.setPlaceholderText(QCoreApplication.translate("Note", u"Search here.", None))
 #if QT_CONFIG(tooltip)
-        self.pb_imp.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+I: IMPORT", None))
+        self.pb_imp.setToolTip(QCoreApplication.translate("Note", u"Ctrl+I: IMPORT", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_imp.setText("")
 #if QT_CONFIG(tooltip)
-        self.pb_exp.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+E: EXPORT", None))
+        self.pb_exp.setToolTip(QCoreApplication.translate("Note", u"Ctrl+E: EXPORT", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_exp.setText("")
 #if QT_CONFIG(tooltip)
-        self.pb_add.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+N", None))
+        self.pb_add.setToolTip(QCoreApplication.translate("Note", u"Ctrl+N", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_add.setText("")
 #if QT_CONFIG(tooltip)
-        self.pb_del.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+D", None))
+        self.pb_del.setToolTip(QCoreApplication.translate("Note", u"Ctrl+D", None))
 #endif // QT_CONFIG(tooltip)
         self.pb_del.setText("")
     # retranslateUi

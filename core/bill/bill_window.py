@@ -1,8 +1,9 @@
 import datetime
 
-from core import bill_utils, utils
-from core.bill import Ui_Bill
-from core.qt_base import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
+from core.bill import bill_utils
+from core.bill.bill import Ui_Bill
+from core.util.qtutils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
+from core.util import utils
 
 
 class BillWindow(Ui_Bill, BaseWindow):
@@ -42,7 +43,18 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.tw_bill.setColumnCount(6)
         self.tw_bill.setHorizontalHeaderLabels(["id", "Date", "Inout", "Type", "Amount", "Item"])
         self.inouts = ["Out", "In"]
-        for col in range(6):
+        font_style = "*{font-size:12px;}"
+        self.sb_start.setStyleSheet(font_style)
+        self.sb_end.setStyleSheet(font_style)
+        self.dsb_total.setStyleSheet(font_style)
+        self.dsb_in.setStyleSheet(font_style)
+        self.dsb_out.setStyleSheet(font_style)
+        self.lb_total.setStyleSheet(font_style)
+        self.lb_in.setStyleSheet(font_style)
+        self.lb_out.setStyleSheet(font_style)
+        self.tw_bill.setColumnWidth(1, 110)
+        self.tw_bill.setColumnWidth(2, 60)
+        for col in range(3, 6):
             self.tw_bill.setColumnWidth(col, 80)
         self.tw_bill.hideColumn(0)
         self.set_i18n()
@@ -52,7 +64,9 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.language = utils.load_config("global", "language")
         if self.language == "zh":
             self.inouts = ["支出", "收入"]
-            self.lb_total.setText("总计：")
+            self.lb_total.setText("合计：")
+            self.lb_in.setText("收入")
+            self.lb_out.setText("支出")
             self.tw_bill.setHorizontalHeaderLabels(["id", "日期", "收支", "类型", "金额", "项目"])
             self.le_filter.setPlaceholderText("搜索...")
 
@@ -105,11 +119,6 @@ class BillWindow(Ui_Bill, BaseWindow):
             self.day_end = self.sb_end.value()
         self.bills = bill_utils.get_between_dates(self.day_start, self.day_end)
         self.bill = None
-        self.update_table_bill()
-
-    def sort_sel_changed(self):
-        self.sort = self.cb_sort.currentIndex()
-        self.bills = bill_utils.get_list_by(sort=self.sort)
         self.update_table_bill()
 
     def bill_sel_changed(self):
@@ -189,12 +198,20 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.update_total()
 
     def update_total(self):
-        total = 0
+        total = 0.
+        total_in = 0.
+        total_out = 0.
         for bill in self.bills:
             if len(self.filter) > 0 and self.filter.upper() not in str(bill).upper():
                 continue
             total += bill.amount * bill.inout
+            if bill.inout > 0:
+                total_in += bill.amount
+            else:
+                total_out += bill.amount
         self.dsb_total.setValue(total)
+        self.dsb_in.setValue(total_in)
+        self.dsb_out.setValue(total_out)
 
     def changeEvent(self, event):
         if event.type() == QEvent.WindowStateChange:
