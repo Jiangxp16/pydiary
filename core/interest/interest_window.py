@@ -106,6 +106,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         if file:
             interest_utils.imp(file)
             self.interests = interest_utils.get_list_by(sort=self.sort)
+            self.interest = None
             self.update_table_interest()
 
     def btn_exp(self):
@@ -117,6 +118,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
     def sort_sel_changed(self):
         self.sort = self.cb_sort.currentIndex()
         self.interests = interest_utils.get_list_by(sort=self.sort)
+        self.interest = None
         self.update_table_interest()
 
     def interest_sel_changed(self):
@@ -135,6 +137,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         if filter_new == self.filter:
             return
         self.filter = filter_new
+        self.interest = None
         self.update_table_interest()
 
     def interest_edited(self, row, col):
