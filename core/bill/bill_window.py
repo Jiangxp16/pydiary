@@ -2,8 +2,9 @@ import datetime
 
 from core.bill import bill_utils
 from core.bill.bill import Ui_Bill
-from core.util.qtutils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
+from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
 from core.util import utils
+from core.util.i18n_utils import tr
 
 
 class BillWindow(Ui_Bill, BaseWindow):
@@ -26,23 +27,36 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.connect_all()
 
     def init(self):
-        self.setWindowIcon(QIcon(utils.get_path(utils.load_config("style", "icon_bill"))))
-        self.pb_imp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_imp"))))
-        self.pb_exp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exp"))))
-        self.pb_add.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_add"))))
-        self.pb_del.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_del"))))
+        self.setWindowIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_bill"))))
+        self.pb_imp.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_imp"))))
+        self.pb_exp.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_exp"))))
+        self.pb_add.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_add"))))
+        self.pb_del.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_del"))))
         today = datetime.date.today()
-        self.day_start = utils.date2int(datetime.date(today.year, today.month, 1))
-        self.day_end = utils.date2int(utils.get_last_day(today.year, today.month))
+        self.day_start = utils.date2int(
+            datetime.date(today.year, today.month, 1))
+        self.day_end = utils.date2int(
+            utils.get_last_day(today.year, today.month))
         self.sb_start.setValue(self.day_start)
         self.sb_end.setValue(self.day_end)
         self.filter = ''
         self.row_bill = -1
-        self.bills: list[bill_utils.Bill] = bill_utils.get_between_dates(self.day_start, self.day_end)
+        self.bills: list[bill_utils.Bill] = bill_utils.get_between_dates(
+            self.day_start, self.day_end)
         self.bill = None
         self.tw_bill.setColumnCount(6)
-        self.tw_bill.setHorizontalHeaderLabels(["id", "Date", "Inout", "Type", "Amount", "Item"])
-        self.inouts = ["Out", "In"]
+        self.tw_bill.setHorizontalHeaderLabels(
+            [tr(x) for x in ["id", "Date", "Inout", "Type", "Amount", "Item"]])
+        self.inouts = [tr("Out"), tr("In")]
+        self.lb_total.setText(tr("Total"))
+        self.lb_in.setText(tr("In"))
+        self.lb_out.setText(tr("Out"))
+        self.le_filter.setPlaceholderText(tr("Search..."))
         font_style = "*{font-size:12px;}"
         self.sb_start.setStyleSheet(font_style)
         self.sb_end.setStyleSheet(font_style)
@@ -57,18 +71,7 @@ class BillWindow(Ui_Bill, BaseWindow):
         for col in range(3, 6):
             self.tw_bill.setColumnWidth(col, 80)
         self.tw_bill.hideColumn(0)
-        self.set_i18n()
         self.update_table_bill()
-
-    def set_i18n(self):
-        self.language = utils.load_config("global", "language")
-        if self.language == "zh":
-            self.inouts = ["支出", "收入"]
-            self.lb_total.setText("合计：")
-            self.lb_in.setText("收入")
-            self.lb_out.setText("支出")
-            self.tw_bill.setHorizontalHeaderLabels(["id", "日期", "收支", "类型", "金额", "项目"])
-            self.le_filter.setPlaceholderText("搜索...")
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
@@ -98,15 +101,16 @@ class BillWindow(Ui_Bill, BaseWindow):
 
     def btn_imp(self):
         file, _ = QFileDialog.getOpenFileName(
-            self, "Import from xlsx file", "", filter="Excel File (*.xlsx);; All Files (*);")
+            self, tr("Import from xlsx file"), "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             bill_utils.imp(file)
-            self.bills = bill_utils.get_between_dates(self.day_start, self.day_end)
+            self.bills = bill_utils.get_between_dates(
+                self.day_start, self.day_end)
             self.bill = None
             self.update_table_bill()
 
     def btn_exp(self):
-        file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "bill.xlsx",
+        file, _ = QFileDialog.getSaveFileName(self, tr("Export to xlsx file"), "bill.xlsx",
                                               filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             bill_utils.exp(file, self.day_start, self.day_end)
@@ -182,7 +186,8 @@ class BillWindow(Ui_Bill, BaseWindow):
             self.set_table_value(tw, row, 3, bill.type, center=True)
             self.set_table_value(tw, row, 4, float(bill.amount), center=True)
             self.set_table_value(tw, row, 5, bill.item)
-            tw.setRowHidden(row, len(self.filter) > 0 and self.filter.upper() not in str(bill).upper())
+            tw.setRowHidden(row, len(self.filter) >
+                            0 and self.filter.upper() not in str(bill).upper())
         tw.setSortingEnabled(True)
         if self.bill is not None:
             for row in range(tw.rowCount()):

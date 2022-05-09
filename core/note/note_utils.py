@@ -1,6 +1,6 @@
 import datetime
 
-from core.util import sqlutils
+from core.util import sql_utils
 from core.util import utils
 
 sql_create = """
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS note (
     content TEXT NOT NULL DEFAULT ""
 );
 """
-sqlutils.cur.execute(sql_create)
+sql_utils.cur.execute(sql_create)
 
 
 class Note:
@@ -36,7 +36,7 @@ class Note:
 
 
 def get_last():
-    rs = sqlutils.get_last("note")
+    rs = sql_utils.get_last("note")
     if rs is not None:
         return Note(*rs)
     return None
@@ -45,8 +45,8 @@ def get_last():
 def add(note=None, **kwargs):
     if note is None:
         note = Note(**kwargs)
-    if sqlutils.insert("INSERT INTO note (`begin`, `last`, `process`, `desire`, `priority`, `content`) VALUES (?,?,?,?,?,?)",
-                       note.params()):
+    if sql_utils.execute("INSERT INTO note (`begin`, `last`, `process`, `desire`, `priority`, `content`) VALUES (?,?,?,?,?,?)",
+                         note.params()):
         return get_last()
     return None
 
@@ -54,7 +54,7 @@ def add(note=None, **kwargs):
 def add_many(notes):
     sql_cmd = "INSERT INTO note (`begin`, `last`, `process`, `desire`, `priority`, `content`) VALUES (?,?,?,?,?,?)"
     data_list = [note.params() for note in notes]
-    return sqlutils.insert_many(sql_cmd, data_list)
+    return sql_utils.execute_many(sql_cmd, data_list)
 
 
 def get_list_by(**kwargs):
@@ -66,14 +66,20 @@ def get_list_by(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    rs_list = sqlutils.select(sql_cmd, args)
+    rs_list = sql_utils.select(sql_cmd, args)
     return [Note(*rs) for rs in rs_list]
 
 
 def update(note: Note):
     sql_cmd = "UPDATE note SET `begin`=?, `last`=?, `process`=?, `desire`=?, \
         `priority`=?, `content`=? WHERE `id`=?"
-    return sqlutils.update(sql_cmd, (*note.params(), note.id))
+    return sql_utils.execute(sql_cmd, (*note.params(), note.id))
+
+
+def update_many(notes: list[Note]):
+    sql_cmd = "UPDATE note SET `begin`=?, `last`=?, `process`=?, `desire`=?, \
+        `priority`=?, `content`=? WHERE `id`=?"
+    return sql_utils.execute_many(sql_cmd, [(*note.params(), note.id) for note in notes])
 
 
 def delete(**kwargs):
@@ -85,7 +91,7 @@ def delete(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    return sqlutils.delete(sql_cmd, args)
+    return sql_utils.execute(sql_cmd, args)
 
 
 def exp(file):

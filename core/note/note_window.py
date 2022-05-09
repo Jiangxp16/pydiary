@@ -1,7 +1,8 @@
 from core.note import note_utils
 from core.note.note import Ui_Note
-from core.util.qtutils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
+from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
 from core.util import utils
+from core.util.i18n_utils import tr
 
 
 class NoteWindow(Ui_Note, BaseWindow):
@@ -33,24 +34,18 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.notes: list[note_utils.Note] = note_utils.get_list_by()
         self.note = None
         self.tw_note.setColumnCount(7)
-        self.tw_note.setHorizontalHeaderLabels(["id", "Begin", "Last", "Process", "Desire", "Priority", "Content"])
-        self.states = ["All", "To do", "Done"]
+        self.tw_note.setHorizontalHeaderLabels(
+            [tr(x) for x in ["id", "Begin", "Last", "Process", "Desire", "Priority", "Content"]])
+        self.states = [tr(x) for x in ["All", "To do", "Done"]]
+        self.le_filter.setPlaceholderText(tr("Search..."))
         self.state = 0
         self.tw_note.setColumnWidth(1, 110)
         self.tw_note.setColumnWidth(2, 110)
         for col in range(3, 7):
             self.tw_note.setColumnWidth(col, 80)
         self.tw_note.hideColumn(0)
-        self.set_i18n()
         self.cb_state.addItems(self.states)
         self.update_table_note()
-
-    def set_i18n(self):
-        self.language = utils.load_config("global", "language")
-        if self.language == "zh":
-            self.states = ["全部", "待完成", "已完成"]
-            self.tw_note.setHorizontalHeaderLabels(["id", "初始日期", "最后日期", "进度", "期望值", "优先级", "内容"])
-            self.le_filter.setPlaceholderText("搜索...")
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
@@ -80,7 +75,7 @@ class NoteWindow(Ui_Note, BaseWindow):
 
     def btn_imp(self):
         file, _ = QFileDialog.getOpenFileName(
-            self, "Import from xlsx file", "", filter="Excel File (*.xlsx);; All Files (*);")
+            self, tr("Import from xlsx file"), "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             note_utils.imp(file)
             self.notes = note_utils.get_list_by()
@@ -88,7 +83,7 @@ class NoteWindow(Ui_Note, BaseWindow):
             self.update_table_note()
 
     def btn_exp(self):
-        file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "note.xlsx",
+        file, _ = QFileDialog.getSaveFileName(self, tr("Export to xlsx file"), "note.xlsx",
                                               filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             note_utils.exp(file)

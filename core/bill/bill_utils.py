@@ -1,6 +1,6 @@
 import datetime
 
-from core.util import sqlutils
+from core.util import sql_utils
 from core.util import utils
 
 sql_create = """
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS bill (
     item TEXT NOT NULL DEFAULT ""
 );
 """
-sqlutils.cur.execute(sql_create)
+sql_utils.cur.execute(sql_create)
 
 # sql_create_index = "CREATE INDEX IF NOT EXISTS index_date ON bill (date);"
 # sqlutils.cur.execute(sql_create_index)
@@ -38,7 +38,7 @@ class Bill:
 
 
 def get_last():
-    rs = sqlutils.get_last("bill")
+    rs = sql_utils.get_last("bill")
     if rs is not None:
         return Bill(*rs)
     return None
@@ -47,8 +47,8 @@ def get_last():
 def add(bill=None, **kwargs):
     if bill is None:
         bill = Bill(**kwargs)
-    if sqlutils.insert("INSERT INTO bill (`date`, `inout`, `type`, `amount`, `item`) VALUES (?,?,?,?,?)",
-                       bill.params()):
+    if sql_utils.execute("INSERT INTO bill (`date`, `inout`, `type`, `amount`, `item`) VALUES (?,?,?,?,?)",
+                         bill.params()):
         return get_last()
     return None
 
@@ -56,7 +56,7 @@ def add(bill=None, **kwargs):
 def add_many(bills):
     sql_cmd = "INSERT INTO bill (`date`, `inout`, `type`, `amount`, `item`) VALUES (?,?,?,?,?)"
     data_list = [bill.params() for bill in bills]
-    return sqlutils.insert_many(sql_cmd, data_list)
+    return sql_utils.execute_many(sql_cmd, data_list)
 
 
 def get_list_by(**kwargs):
@@ -68,20 +68,27 @@ def get_list_by(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    rs_list = sqlutils.select(sql_cmd, args)
+    rs_list = sql_utils.select(sql_cmd, args)
     return [Bill(*rs) for rs in rs_list]
 
 
 def get_between_dates(date1=0, date2=99999999):
     sql_cmd = "SELECT `id`, `date`, `inout`, `type`, `amount`, `item` FROM bill WHERE `date` BETWEEN ? AND ? ORDER BY `date` ASC"
-    rs_list = sqlutils.select(sql_cmd, (date1, date2))
+    rs_list = sql_utils.select(sql_cmd, (date1, date2))
     return [Bill(*rs) for rs in rs_list]
 
 
 def update(bill: Bill):
     bill.item = bill.item.strip()
     sql_cmd = "UPDATE bill SET `date`=?, `inout`=?, `type`=?, `amount`=?, `item`=? WHERE `id`=?"
-    return sqlutils.update(sql_cmd, (*bill.params(), bill.id))
+    return sql_utils.execute(sql_cmd, (*bill.params(), bill.id))
+
+
+def update_many(bills: list[Bill]):
+    sql_cmd = "UPDATE bill SET `date`=?, `inout`=?, `type`=?, `amount`=?, `item`=? WHERE `id`=?"
+    for bill in bills:
+        bill.item = bill.item.strip()
+    return sql_utils.execute_many(sql_cmd, [(*bill.params(), bill.id) for bill in bills])
 
 
 def delete(**kwargs):
@@ -93,7 +100,7 @@ def delete(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    return sqlutils.delete(sql_cmd, args)
+    return sql_utils.execute(sql_cmd, args)
 
 
 def exp(file, date1=0, date2=99999999):

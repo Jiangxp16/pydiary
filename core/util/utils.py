@@ -68,6 +68,7 @@ def load_config(seg, key=None):
             "db_name": "diary.db",
             "first_day_of_week": 7,
             "multi_thread": 1,
+            "login_expired": 0,
         },
         "style": {
             "font": "Arial,Kaiti",

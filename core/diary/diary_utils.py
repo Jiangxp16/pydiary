@@ -1,6 +1,6 @@
 from typing import OrderedDict
 
-from core.util import sqlutils
+from core.util import encrypt_utils, sql_utils
 
 sql_create = """
 CREATE TABLE IF NOT EXISTS diary (
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS diary (
     location CHAR(50) NOT NULL
 );
 """
-sqlutils.cur.execute(sql_create)
+sql_utils.cur.execute(sql_create)
 
 
 class Diary:
@@ -32,8 +32,8 @@ def add(diary: Diary = None, **kwargs):
         diary = Diary(**kwargs)
     if diary.is_empty():
         return False
-    return sqlutils.insert("INSERT INTO diary (`id`, `content`, `weather`, `location`) VALUES (?,?,?,?)",
-                           (diary.id, *diary.params()))
+    return sql_utils.execute("INSERT INTO diary (`id`, `content`, `weather`, `location`) VALUES (?,?,?,?)",
+                             (diary.id, *diary.params()))
 
 
 def get_by(**kwargs):
@@ -45,15 +45,15 @@ def get_by(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    rs = sqlutils.select_one(sql_cmd, args)
+    rs = sql_utils.select_one(sql_cmd, args)
     if rs is None:
         return None
     return Diary(*rs)
 
 
 def get_between_dates(date1=0, date2=99999999) -> list[Diary]:
-    rs_list = sqlutils.select("SELECT `id`, `content`, `weather`, `location` FROM diary WHERE id BETWEEN ? AND ? ORDER BY id",
-                              (date1, date2))
+    rs_list = sql_utils.select("SELECT `id`, `content`, `weather`, `location` FROM diary WHERE id BETWEEN ? AND ? ORDER BY id",
+                               (date1, date2))
     diaries = []
     for rs in rs_list:
         diaries.append(Diary(*rs))
@@ -68,8 +68,13 @@ def get_month_diary(year, month):
 
 
 def update(diary: Diary):
-    return sqlutils.update("UPDATE diary SET content=?, weather=?, location=? WHERE id=?",
-                           (*diary.params(), diary.id))
+    return sql_utils.execute("UPDATE diary SET content=?, weather=?, location=? WHERE id=?",
+                             (*diary.params(), diary.id))
+
+
+def update_many(diarys: list[Diary]):
+    sql_cmd = "UPDATE diary SET content=?, weather=?, location=? WHERE id=?"
+    return sql_utils.execute_many(sql_cmd, [(*diary.params(), diary.id) for diary in diarys])
 
 
 def add_or_update(diary: Diary):
@@ -87,7 +92,7 @@ def delete(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    return sqlutils.delete(sql_cmd, args)
+    return sql_utils.execute(sql_cmd, args)
 
 
 def update_diary(diary: Diary):
@@ -96,10 +101,17 @@ def update_diary(diary: Diary):
     return add_or_update(diary)
 
 
-def update_diaries(diary_dict: dict[int, Diary]):
+def update_diaries(diaries: dict[int, Diary] | list[Diary]):
     res = True
-    for diary in diary_dict.values():
-        res &= update_diary(diary)
+    if isinstance(diaries, dict):
+        diaries = list(diaries.values())
+    diaries_to_update = []
+    for diary in diaries:
+        if diary.is_empty():
+            res &= delete(id=diary.id)
+        else:
+            diaries_to_update.append(diary)
+    res &= update_many(diaries_to_update)
     return res
 
 

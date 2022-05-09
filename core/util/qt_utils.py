@@ -1,8 +1,12 @@
 from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction, QFont
 from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable
-from PySide6.QtWidgets import QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle
+from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog
 
 from core.util import utils
+
+
+def wheel_event(widget: QWidget, event: QEvent = None):
+    return
 
 
 def key_pressed(table: QTableWidget, event: QKeyEvent):
@@ -48,6 +52,9 @@ def key_pressed(table: QTableWidget, event: QKeyEvent):
 
 
 QTableWidget.keyPressEvent = key_pressed
+QComboBox.wheelEvent = wheel_event
+QDoubleSpinBox.wheelEvent = wheel_event
+QSpinBox.wheelEvent = wheel_event
 
 
 class TextEdit(QPlainTextEdit):
@@ -175,3 +182,15 @@ class BaseWindow(QMainWindow):
             pass
         finally:
             signal.connect(slot)
+
+
+def show_msg(msg, level="INFO", buttons=QMessageBox.Ok):
+    level = level.upper()
+    msg_type = QMessageBox.Information
+    if level == "WARNING":
+        msg_type = QMessageBox.Warning
+    elif level == "ERROR" or level == "CRITICAL":
+        msg_type = QMessageBox.Critical
+    qmsg = QMessageBox(msg_type, level, msg, buttons)
+    qmsg.setWindowFlags(Qt.WindowStaysOnTopHint)
+    qmsg.exec()
