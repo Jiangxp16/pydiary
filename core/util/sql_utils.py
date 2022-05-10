@@ -1,9 +1,9 @@
 import atexit
 import sqlite3
 
-from core.util import encrypt_utils, utils
+from core.util import encrypt_utils, config_utils
 
-db_name = utils.load_config("global", "db_name")
+db_name = config_utils.load_config("global", "db_name")
 conn = sqlite3.connect(db_name, check_same_thread=False)
 cur = conn.cursor()
 

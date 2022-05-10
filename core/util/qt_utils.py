@@ -1,8 +1,10 @@
+import os
+
 from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction, QFont
 from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable
 from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog
 
-from core.util import utils
+from core.util import utils, config_utils
 
 
 def wheel_event(widget: QWidget, event: QEvent = None):
@@ -89,7 +91,7 @@ class LineEdit(QLineEdit):
 
 class BaseWindow(QMainWindow):
     thread_update = QThreadPool()
-    multi_thread = int(utils.load_config("global", "multi_thread"))
+    multi_thread = int(config_utils.load_config("global", "multi_thread"))
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
@@ -194,3 +196,24 @@ def show_msg(msg, level="INFO", buttons=QMessageBox.Ok):
     qmsg = QMessageBox(msg_type, level, msg, buttons)
     qmsg.setWindowFlags(Qt.WindowStaysOnTopHint)
     qmsg.exec()
+
+
+def load_qss(app):
+    config = config_utils.load_config("style")
+    qss_file = config.get("qss")
+    font_size = config.get("font_size")
+    font = config.get("font")
+    style_sheet = ""
+    if qss_file is not None:
+        qss_file = utils.get_path(qss_file)
+        if os.path.isfile(qss_file):
+            try:
+                with open(qss_file, "r", encoding="utf-8") as f:
+                    style_sheet = f.read()
+            except Exception as e:
+                print(e.args)
+    if font is not None:
+        style_sheet += "\r\n*{font-family:%s;}" % font
+    if font_size is not None:
+        style_sheet += "\r\n*{font-size:%spx;}" % font_size
+    app.setStyleSheet(style_sheet)

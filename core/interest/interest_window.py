@@ -2,7 +2,7 @@ from core.interest.interest import Ui_Interest
 
 from core.interest import interest_utils
 from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
-from core.util import utils
+from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
 
@@ -26,15 +26,15 @@ class InterestWindow(Ui_Interest, BaseWindow):
 
     def init(self):
         self.setWindowIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_interest"))))
+            config_utils.load_config("style", "icon_interest"))))
         self.pb_imp.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_imp"))))
+            config_utils.load_config("style", "icon_imp"))))
         self.pb_exp.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_exp"))))
+            config_utils.load_config("style", "icon_exp"))))
         self.pb_add.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_add"))))
+            config_utils.load_config("style", "icon_add"))))
         self.pb_del.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_del"))))
+            config_utils.load_config("style", "icon_del"))))
         self.sorts = [tr(x) for x in ["All", "Movie", "TV",
                                       "Comic", "Game", "Book", "Music", "Others"]]
         self.sort = 0
@@ -50,6 +50,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
                                   "Pub", "Last", "Score\r\n(db)",
                                   "Score\r\n(imdb)", "Score", "Remark"]]
         self.tw_interest.setHorizontalHeaderLabels(labels)
+        self.tw_interest.setAlternatingRowColors(True)
         self.le_filter.setPlaceholderText("Search...")
         for col in range(11):
             self.tw_interest.setColumnWidth(col, 80)

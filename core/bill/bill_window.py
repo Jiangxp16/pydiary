@@ -3,7 +3,7 @@ import datetime
 from core.bill import bill_utils
 from core.bill.bill import Ui_Bill
 from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
-from core.util import utils
+from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
 
@@ -28,15 +28,15 @@ class BillWindow(Ui_Bill, BaseWindow):
 
     def init(self):
         self.setWindowIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_bill"))))
+            config_utils.load_config("style", "icon_bill"))))
         self.pb_imp.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_imp"))))
+            config_utils.load_config("style", "icon_imp"))))
         self.pb_exp.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_exp"))))
+            config_utils.load_config("style", "icon_exp"))))
         self.pb_add.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_add"))))
+            config_utils.load_config("style", "icon_add"))))
         self.pb_del.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_del"))))
+            config_utils.load_config("style", "icon_del"))))
         today = datetime.date.today()
         self.day_start = utils.date2int(
             datetime.date(today.year, today.month, 1))
@@ -52,6 +52,7 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.tw_bill.setColumnCount(6)
         self.tw_bill.setHorizontalHeaderLabels(
             [tr(x) for x in ["id", "Date", "Inout", "Type", "Amount", "Item"]])
+        self.tw_bill.setAlternatingRowColors(True)
         self.inouts = [tr("Out"), tr("In")]
         self.lb_total.setText(tr("Total"))
         self.lb_in.setText(tr("In"))

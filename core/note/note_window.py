@@ -1,7 +1,7 @@
 from core.note import note_utils
 from core.note.note import Ui_Note
 from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
-from core.util import utils
+from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
 
@@ -24,11 +24,11 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.connect_all()
 
     def init(self):
-        self.setWindowIcon(QIcon(utils.get_path(utils.load_config("style", "icon_note"))))
-        self.pb_imp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_imp"))))
-        self.pb_exp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exp"))))
-        self.pb_add.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_add"))))
-        self.pb_del.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_del"))))
+        self.setWindowIcon(QIcon(utils.get_path(config_utils.load_config("style", "icon_note"))))
+        self.pb_imp.setIcon(QIcon(utils.get_path(config_utils.load_config("style", "icon_imp"))))
+        self.pb_exp.setIcon(QIcon(utils.get_path(config_utils.load_config("style", "icon_exp"))))
+        self.pb_add.setIcon(QIcon(utils.get_path(config_utils.load_config("style", "icon_add"))))
+        self.pb_del.setIcon(QIcon(utils.get_path(config_utils.load_config("style", "icon_del"))))
         self.filter = ''
         self.row_note = -1
         self.notes: list[note_utils.Note] = note_utils.get_list_by()
@@ -36,6 +36,7 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.tw_note.setColumnCount(7)
         self.tw_note.setHorizontalHeaderLabels(
             [tr(x) for x in ["id", "Begin", "Last", "Process", "Desire", "Priority", "Content"]])
+        self.tw_note.setAlternatingRowColors(True)
         self.states = [tr(x) for x in ["All", "To do", "Done"]]
         self.le_filter.setPlaceholderText(tr("Search..."))
         self.state = 0
