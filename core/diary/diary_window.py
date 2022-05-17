@@ -87,9 +87,10 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.tray = QSystemTrayIcon(self)
         self.tray.setIcon(QIcon(self.logo_path))
         tray_menu = QMenu(self)
-        tray_menu.setStyleSheet("color:black; background:white;\
+        tray_menu.setStyleSheet("QMenu{color:black; background:white;\
                                 selection-background-color:#e4e4e4;\
-                                font-family:Arial,Microsoft YaHei; font-size:15px;")
+                                font-family:Arial,Microsoft YaHei; font-size:15px;}\
+                                QMenu::item {color: black;}")
 
         self.action_diary = QAction("&Diary", tray_menu)
         self.action_interest = QAction("&Interest", tray_menu)

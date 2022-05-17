@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction, QFont
-from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable
+from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
 from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog
 
 from core.util import utils, config_utils
@@ -189,12 +189,16 @@ class BaseWindow(QMainWindow):
 def show_msg(msg, level="INFO", buttons=QMessageBox.Ok):
     level = level.upper()
     msg_type = QMessageBox.Information
+    icon = QIcon(QApplication.style().standardPixmap(QStyle.StandardPixmap.SP_MessageBoxInformation))
     if level == "WARNING":
         msg_type = QMessageBox.Warning
+        icon = QIcon(QApplication.style().standardPixmap(QStyle.StandardPixmap.SP_MessageBoxWarning))
     elif level == "ERROR" or level == "CRITICAL":
         msg_type = QMessageBox.Critical
+        icon = QIcon(QApplication.style().standardPixmap(QStyle.StandardPixmap.SP_MessageBoxCritical))
     qmsg = QMessageBox(msg_type, level, msg, buttons)
     qmsg.setWindowFlags(Qt.WindowStaysOnTopHint)
+    qmsg.setWindowIcon(icon)
     qmsg.exec()
 
 

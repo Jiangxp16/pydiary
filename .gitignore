@@ -1,5 +1,4 @@
 # personal
-local_test
 *.exe
 .VSCodeCounter/
 data
@@ -7,7 +6,8 @@ logs/
 *.db
 test*
 tool*
-config.ini
+*.ini
+*.spec
 
 
 # Environments
