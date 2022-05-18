@@ -16,6 +16,12 @@ if not shared.create(1):
         show_msg("Another instance is already running.", "WARNING")
         sys.exit(0)
 
+
+@atexit.register
+def clean_shared_memory():
+    shared.detach()
+
+
 load_qss(app)
 
 if not dbconfig_utils.login():
@@ -26,5 +32,3 @@ if not int(config_utils.load_config("global", "hide_on_startup")):
     diary.show()
 
 app.exec()
-shared.detach()
-sys.exit(0)
