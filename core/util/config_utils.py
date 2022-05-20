@@ -28,7 +28,7 @@ config = {
         "multi_thread": 1,
         "login_expired": 0,
         "hide_on_startup": 0,
-        "language": "en",
+        "show_lunar": 1,
     },
     "style": {
         "font": "Arial,Kaiti",
@@ -45,6 +45,9 @@ config = {
         "icon_del": "style/del.png",
         "icon_month": "style/month.png",
         "icon_day": "style/day.png",
+        "icon_location": "style/location.png",
+        "icon_weather": "style/weather.png",
+        "icon_auto": "style/auto.png",
         "qss": None,
     }
 }

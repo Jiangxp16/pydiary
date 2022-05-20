@@ -2,7 +2,7 @@ import datetime
 
 from core.bill import bill_utils
 from core.bill.bill import Ui_Bill
-from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
+from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -69,8 +69,10 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.lb_out.setStyleSheet(font_style)
         self.tw_bill.setColumnWidth(1, 110)
         self.tw_bill.setColumnWidth(2, 60)
-        for col in range(3, 6):
+        for col in range(4, 6):
             self.tw_bill.setColumnWidth(col, 80)
+        self.tw_bill.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.tw_bill.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.tw_bill.hideColumn(0)
         self.update_table_bill()
 

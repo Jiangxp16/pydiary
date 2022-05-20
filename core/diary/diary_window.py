@@ -4,7 +4,7 @@ import time
 from core.diary import diary_utils
 from core.diary.diary import Ui_Diary
 from core.util.qt_utils import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
-                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
+                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView, QPixmap)
 from core.util import utils, config_utils, dbconfig_utils
 from core.util.i18n_utils import tr
 
@@ -37,6 +37,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.time_logined = time.time()
         self.logo_path = utils.get_path(config_utils.load_config("style", "logo"))
         self.expired = int(config_utils.load_config("global", "login_expired"))
+        self.show_lunar = int(config_utils.load_config("global", "show_lunar"))
         self.setWindowIcon(QIcon(self.logo_path))
         self.pb_imp.setIcon(QIcon(utils.get_path(
             config_utils.load_config("style", "icon_imp"))))
@@ -48,12 +49,22 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             config_utils.load_config("style", "icon_month"))))
         self.pb_daily.setIcon(QIcon(utils.get_path(
             config_utils.load_config("style", "icon_day"))))
+        icon_weather = QPixmap(utils.get_path(
+            config_utils.load_config("style", "icon_weather")))
+        icon_location = QPixmap(utils.get_path(
+            config_utils.load_config("style", "icon_location")))
+        self.lb_weather.setFixedSize(25, 25)
+        self.lb_location.setFixedSize(20, 20)
+        self.lb_weather.setPixmap(icon_weather.scaled(self.lb_weather.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.lb_location.setPixmap(icon_location.scaled(self.lb_location.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.WEEK_DAYS = [tr(day) for day in (
             "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")]
         self.add_tray()
-        self.cb_autosave.setText(tr("AUTO"))
-        self.lb_location.setText(tr("location"))
-        self.lb_weather.setText(tr("whether"))
+        self.cb_autosave.setIcon(QIcon(utils.get_path(
+            config_utils.load_config("style", "icon_auto"))))
+        # self.cb_autosave.setText(tr("AUTO"))
+        # self.lb_location.setText(tr("location"))
+        # self.lb_weather.setText(tr("whether"))
         self.action_diary.setText(tr("Diary"))
         self.action_interest.setText(tr("Interest"))
         self.action_bill.setText(tr("Bill"))
