@@ -1,6 +1,6 @@
 from core.note import note_utils
 from core.note.note import Ui_Note
-from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView
+from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView, TextEdit
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -44,10 +44,11 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.tw_note.setColumnWidth(2, 110)
         for col in range(3, 7):
             self.tw_note.setColumnWidth(col, 80)
-        self.tw_note.verticalHeader().setDefaultSectionSize(self.tw_note.verticalHeader().defaultSectionSize() * 2)
         # self.tw_note.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
         # self.tw_note.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         self.tw_note.hideColumn(0)
+        self.tw_note.verticalHeader().setResizeContentsPrecision(50)
+        self.tw_note.horizontalHeader().setResizeContentsPrecision(50)
         self.cb_state.addItems(self.states)
         self.update_table_note()
 
@@ -114,25 +115,37 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.filter = filter_new
         self.update_table_note()
 
-    def note_edited(self, row, col):
+    def note_edited(self, row=None, col=None):
         if self.note is None:
             return
+        obj = self.sender()
         self.disconnect_all()
         note = self.note
-        value = self.get_table_value(self.tw_note, row, col)
-        if col == 1:
-            note.begin = value
-        elif col == 2:
-            note.last = value
-        elif col == 3:
-            note.process = value
-        elif col == 4:
-            note.desire = value
-        elif col == 5:
-            note.priority = value
-        elif col == 6:
-            note.content = value
-        self.start_task(note_utils.update, note)
+        updated = False
+        if isinstance(obj, TextEdit):
+            row = self.tw_note.currentRow()
+            text_new = obj.toPlainText()
+            if text_new != note.content:
+                updated = True
+                note.content = text_new
+                # self.set_table_value(self.tw_note, row, 6, note.content)
+        else:
+            updated = True
+            value = self.get_table_value(self.tw_note, row, col)
+            if col == 1:
+                note.begin = value
+            elif col == 2:
+                note.last = value
+            elif col == 3:
+                note.process = value
+            elif col == 4:
+                note.desire = value
+            elif col == 5:
+                note.priority = value
+            # elif col == 6:
+            #    note.content = value
+        if updated:
+            self.start_task(note_utils.update, note)
         self.connect_all()
 
     def update_table_note(self):
@@ -148,11 +161,14 @@ class NoteWindow(Ui_Note, BaseWindow):
             self.set_table_value(tw, row, 3, note.process, center=True)
             self.set_table_value(tw, row, 4, note.desire, center=True)
             self.set_table_value(tw, row, 5, note.priority, center=True)
-            self.set_table_value(tw, row, 6, note.content)
+            # self.set_table_value(tw, row, 6, note.content)
+            te = self.get_table_text_edit(tw, row, 6)
+            self.reconnect(te.focusOut, self.note_edited)
+            te.setPlainText(note.content)
             hidden = (len(self.filter) > 0 and self.filter.upper() not in str(note).upper()) or \
                 (self.state == 1 and note.process >= 100) or (self.state == 2 and note.process < 100)
             tw.setRowHidden(row, hidden)
-            # tw.verticalHeader().setSectionResizeMode(row, QHeaderView.ResizeMode.ResizeToContents)
+        tw.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         tw.setSortingEnabled(True)
         if self.note is not None:
             for row in range(tw.rowCount()):
