@@ -1,6 +1,6 @@
 from core.note import note_utils
 from core.note.note import Ui_Note
-from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView, TextEdit
+from core.util.qt_utils import BaseWindow, NoSelectionDelegate, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView, TextEdit
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -49,6 +49,7 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.tw_note.hideColumn(0)
         self.tw_note.verticalHeader().setResizeContentsPrecision(50)
         self.tw_note.horizontalHeader().setResizeContentsPrecision(50)
+        self.tw_note.setItemDelegate(NoSelectionDelegate())
         self.cb_state.addItems(self.states)
         self.update_table_note()
 

@@ -1,7 +1,7 @@
 from core.interest.interest import Ui_Interest
 
 from core.interest import interest_utils
-from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
+from core.util.qt_utils import BaseWindow, NoSelectionDelegate, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -59,6 +59,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.tw_interest.setColumnWidth(5, 90)
         self.tw_interest.setColumnWidth(6, 90)
         self.tw_interest.hideColumn(0)
+        self.tw_interest.setItemDelegate(NoSelectionDelegate())
         self.update_table_interest()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
