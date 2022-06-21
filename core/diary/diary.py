@@ -19,7 +19,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCalendarWidget, QCheckBox,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+    QTableWidgetItem, QVBoxLayout, QWidget)
+
+from core.util.qt_utils import TableWidget
 
 class Ui_Diary(object):
     def setupUi(self, Diary):
@@ -86,13 +88,6 @@ class Ui_Diary(object):
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer_2)
 
-        self.cb_autosave = QCheckBox(self.centralwidget)
-        self.cb_autosave.setObjectName(u"cb_autosave")
-        self.cb_autosave.setLayoutDirection(Qt.RightToLeft)
-        self.cb_autosave.setChecked(True)
-
-        self.horizontalLayout_4.addWidget(self.cb_autosave)
-
         self.pb_save = QPushButton(self.centralwidget)
         self.pb_save.setObjectName(u"pb_save")
         self.pb_save.setMinimumSize(QSize(40, 0))
@@ -101,6 +96,13 @@ class Ui_Diary(object):
         self.pb_save.setFlat(False)
 
         self.horizontalLayout_4.addWidget(self.pb_save)
+
+        self.cb_autosave = QCheckBox(self.centralwidget)
+        self.cb_autosave.setObjectName(u"cb_autosave")
+        self.cb_autosave.setLayoutDirection(Qt.RightToLeft)
+        self.cb_autosave.setChecked(True)
+
+        self.horizontalLayout_4.addWidget(self.cb_autosave)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_4)
@@ -173,7 +175,7 @@ class Ui_Diary(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
 
-        self.tw_content = QTableWidget(self.centralwidget)
+        self.tw_content = TableWidget(self.centralwidget)
         self.tw_content.setObjectName(u"tw_content")
         self.tw_content.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.tw_content.horizontalHeader().setStretchLastSection(True)
@@ -212,13 +214,13 @@ class Ui_Diary(object):
 #endif // QT_CONFIG(tooltip)
         self.pb_exp.setText("")
 #if QT_CONFIG(tooltip)
+        self.pb_save.setToolTip(QCoreApplication.translate("Diary", u"Ctrl+S: Save", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_save.setText("")
+#if QT_CONFIG(tooltip)
         self.cb_autosave.setToolTip(QCoreApplication.translate("Diary", u"Auto save.", None))
 #endif // QT_CONFIG(tooltip)
         self.cb_autosave.setText("")
-#if QT_CONFIG(tooltip)
-        self.pb_save.setToolTip(QCoreApplication.translate("Diary", u"Ctrl+S: SAVE", None))
-#endif // QT_CONFIG(tooltip)
-        self.pb_save.setText("")
         self.lb_weather.setText("")
         self.lb_location.setText("")
 #if QT_CONFIG(tooltip)

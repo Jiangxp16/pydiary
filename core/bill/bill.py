@@ -15,11 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QAbstractSpinBox, QApplication, QDoubleSpinBox,
+from PySide6.QtWidgets import (QAbstractItemView, QAbstractSpinBox, QApplication, QDateEdit,
     QFrame, QHBoxLayout, QHeaderView, QLabel,
     QLineEdit, QMainWindow, QPushButton, QSizePolicy,
-    QSpacerItem, QSpinBox, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget)
+    QSpacerItem, QTableWidgetItem, QVBoxLayout, QWidget)
+
+from core.util.qt_utils import (DoubleSpinBox, TableWidget)
 
 class Ui_Bill(object):
     def setupUi(self, Bill):
@@ -32,30 +33,22 @@ class Ui_Bill(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.sb_start = QSpinBox(self.centralwidget)
-        self.sb_start.setObjectName(u"sb_start")
-        self.sb_start.setAlignment(Qt.AlignCenter)
-        self.sb_start.setButtonSymbols(QAbstractSpinBox.NoButtons)
-        self.sb_start.setKeyboardTracking(False)
-        self.sb_start.setMaximum(99999999)
-        self.sb_start.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        self.de_start = QDateEdit(self.centralwidget)
+        self.de_start.setObjectName(u"de_start")
+        self.de_start.setCalendarPopup(True)
 
-        self.horizontalLayout_2.addWidget(self.sb_start)
+        self.horizontalLayout_2.addWidget(self.de_start)
 
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
 
         self.horizontalLayout_2.addWidget(self.label)
 
-        self.sb_end = QSpinBox(self.centralwidget)
-        self.sb_end.setObjectName(u"sb_end")
-        self.sb_end.setAlignment(Qt.AlignCenter)
-        self.sb_end.setButtonSymbols(QAbstractSpinBox.NoButtons)
-        self.sb_end.setKeyboardTracking(False)
-        self.sb_end.setMaximum(99999999)
-        self.sb_end.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
+        self.de_end = QDateEdit(self.centralwidget)
+        self.de_end.setObjectName(u"de_end")
+        self.de_end.setCalendarPopup(True)
 
-        self.horizontalLayout_2.addWidget(self.sb_end)
+        self.horizontalLayout_2.addWidget(self.de_end)
 
         self.hs_sort = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -69,7 +62,7 @@ class Ui_Bill(object):
 
         self.horizontalLayout_2.addWidget(self.lb_total)
 
-        self.dsb_total = QDoubleSpinBox(self.centralwidget)
+        self.dsb_total = DoubleSpinBox(self.centralwidget)
         self.dsb_total.setObjectName(u"dsb_total")
         self.dsb_total.setMaximumSize(QSize(16777215, 16777215))
         self.dsb_total.setAlignment(Qt.AlignCenter)
@@ -85,7 +78,7 @@ class Ui_Bill(object):
 
         self.horizontalLayout_2.addWidget(self.lb_in)
 
-        self.dsb_in = QDoubleSpinBox(self.centralwidget)
+        self.dsb_in = DoubleSpinBox(self.centralwidget)
         self.dsb_in.setObjectName(u"dsb_in")
         self.dsb_in.setMaximumSize(QSize(16777215, 16777215))
         self.dsb_in.setAlignment(Qt.AlignCenter)
@@ -101,7 +94,7 @@ class Ui_Bill(object):
 
         self.horizontalLayout_2.addWidget(self.lb_out)
 
-        self.dsb_out = QDoubleSpinBox(self.centralwidget)
+        self.dsb_out = DoubleSpinBox(self.centralwidget)
         self.dsb_out.setObjectName(u"dsb_out")
         self.dsb_out.setMaximumSize(QSize(16777215, 16777215))
         self.dsb_out.setAlignment(Qt.AlignCenter)
@@ -115,7 +108,7 @@ class Ui_Bill(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
-        self.tw_bill = QTableWidget(self.centralwidget)
+        self.tw_bill = TableWidget(self.centralwidget)
         self.tw_bill.setObjectName(u"tw_bill")
         self.tw_bill.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
         self.tw_bill.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -190,7 +183,9 @@ class Ui_Bill(object):
 
     def retranslateUi(self, Bill):
         Bill.setWindowTitle(QCoreApplication.translate("Bill", u"BILL", None))
+        self.de_start.setDisplayFormat(QCoreApplication.translate("Bill", u"yyyyMMdd", None))
         self.label.setText(QCoreApplication.translate("Bill", u"~", None))
+        self.de_end.setDisplayFormat(QCoreApplication.translate("Bill", u"yyyyMMdd", None))
         self.lb_total.setText(QCoreApplication.translate("Bill", u"TOTAL", None))
         self.lb_in.setText(QCoreApplication.translate("Bill", u"IN", None))
         self.lb_out.setText(QCoreApplication.translate("Bill", u"OUT", None))

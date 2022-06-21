@@ -1,6 +1,6 @@
 from core.note import note_utils
 from core.note.note import Ui_Note
-from core.util.qt_utils import BaseWindow, NoSelectionDelegate, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView, TextEdit
+from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView, TextEdit, QApplication
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -31,7 +31,6 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.pb_del.setIcon(QIcon(utils.get_path(config_utils.load_config("style", "icon_del"))))
         self.filter = ''
         self.row_note = -1
-        self.notes: list[note_utils.Note] = note_utils.get_list_by()
         self.note = None
         self.tw_note.setColumnCount(7)
         self.tw_note.setHorizontalHeaderLabels(
@@ -44,13 +43,10 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.tw_note.setColumnWidth(2, 110)
         for col in range(3, 7):
             self.tw_note.setColumnWidth(col, 80)
-        # self.tw_note.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        # self.tw_note.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         self.tw_note.hideColumn(0)
-        self.tw_note.verticalHeader().setResizeContentsPrecision(50)
-        self.tw_note.horizontalHeader().setResizeContentsPrecision(50)
-        self.tw_note.setItemDelegate(NoSelectionDelegate())
+        self.tw_note.set_delegate(col_dict={6: TextEdit})
         self.cb_state.addItems(self.states)
+        self.notes = note_utils.get_list_by()
         self.update_table_note()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
@@ -75,7 +71,7 @@ class NoteWindow(Ui_Note, BaseWindow):
         if self.note is None:
             return
         self.notes.remove(self.note)
-        self.start_task(note_utils.delete, id=self.note.id)
+        self.start_task(note_utils.delete, {'id': self.note.id})
         self.note = None
         self.update_table_note()
 
@@ -84,9 +80,8 @@ class NoteWindow(Ui_Note, BaseWindow):
             self, tr("Import from xlsx file"), "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             note_utils.imp(file)
-            self.notes = note_utils.get_list_by()
             self.note = None
-            self.update_table_note()
+            self.start_task(note_utils.get_list_by, complete=self.update_table_note)
 
     def btn_exp(self):
         file, _ = QFileDialog.getSaveFileName(self, tr("Export to xlsx file"), "note.xlsx",
@@ -103,7 +98,7 @@ class NoteWindow(Ui_Note, BaseWindow):
         if self.row_note < 0:
             self.note = None
         else:
-            id_row = self.get_table_value(self.tw_note, self.row_note, 0)
+            id_row = self.tw_note.get_value(self.row_note, 0)
             for i in range(len(self.notes)):
                 if self.notes[i].id == id_row:
                     self.note = self.notes[i]
@@ -119,61 +114,49 @@ class NoteWindow(Ui_Note, BaseWindow):
     def note_edited(self, row=None, col=None):
         if self.note is None:
             return
-        obj = self.sender()
         self.disconnect_all()
         note = self.note
-        updated = False
-        if isinstance(obj, TextEdit):
-            row = self.tw_note.currentRow()
-            text_new = obj.toPlainText()
-            if text_new != note.content:
-                updated = True
-                note.content = text_new
-                # self.set_table_value(self.tw_note, row, 6, note.content)
-        else:
-            updated = True
-            value = self.get_table_value(self.tw_note, row, col)
-            if col == 1:
-                note.begin = value
-            elif col == 2:
-                note.last = value
-            elif col == 3:
-                note.process = value
-            elif col == 4:
-                note.desire = value
-            elif col == 5:
-                note.priority = value
-            # elif col == 6:
-            #    note.content = value
-        if updated:
-            self.start_task(note_utils.update, note)
+        value = self.tw_note.get_value(row, col)
+        if col == 1:
+            note.begin = value
+        elif col == 2:
+            note.last = value
+        elif col == 3:
+            note.process = value
+        elif col == 4:
+            note.desire = value
+        elif col == 5:
+            note.priority = value
+        elif col == 6:
+            note.content = value
+        self.start_task(note_utils.update, (note,))
         self.connect_all()
 
-    def update_table_note(self):
+    def update_table_note(self, notes=None):
+        self.notes = self.notes if notes is None else notes
         self.disconnect_all()
         tw = self.tw_note
         tw.setRowCount(len(self.notes))
         tw.setSortingEnabled(False)
         for row in range(tw.rowCount()):
             note = self.notes[row]
-            self.set_table_value(tw, row, 0, note.id)
-            self.set_table_value(tw, row, 1, note.begin, center=True)
-            self.set_table_value(tw, row, 2, note.last, center=True)
-            self.set_table_value(tw, row, 3, note.process, center=True)
-            self.set_table_value(tw, row, 4, note.desire, center=True)
-            self.set_table_value(tw, row, 5, note.priority, center=True)
-            # self.set_table_value(tw, row, 6, note.content)
-            te = self.get_table_text_edit(tw, row, 6)
-            self.reconnect(te.focusOut, self.note_edited)
-            te.setPlainText(note.content)
+            tw.set_item(row, 0, note.id)
+            tw.set_item(row, 1, note.begin, center=True)
+            tw.set_item(row, 2, note.last, center=True)
+            tw.set_item(row, 3, note.process, center=True)
+            tw.set_item(row, 4, note.desire, center=True)
+            tw.set_item(row, 5, note.priority, center=True)
+            tw.set_item(row, 6, note.content)
             hidden = (len(self.filter) > 0 and self.filter.upper() not in str(note).upper()) or \
                 (self.state == 1 and note.process >= 100) or (self.state == 2 and note.process < 100)
             tw.setRowHidden(row, hidden)
         tw.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        QApplication.processEvents()
+        tw.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         tw.setSortingEnabled(True)
         if self.note is not None:
             for row in range(tw.rowCount()):
-                if self.get_table_value(tw, row, 0) == note.id:
+                if tw.get_value(row, 0) == note.id:
                     tw.selectRow(row)
                     self.row_note = row
                     break

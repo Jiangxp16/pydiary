@@ -38,6 +38,9 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.logo_path = utils.get_path(config_utils.load_config("style", "logo"))
         self.expired = int(config_utils.load_config("global", "login_expired"))
         self.show_lunar = int(config_utils.load_config("global", "show_lunar"))
+        self.show_bill = int(config_utils.load_config("global", "show_bill"))
+        self.show_interest = int(config_utils.load_config("global", "show_interest"))
+        self.show_note = int(config_utils.load_config("global", "show_note"))
         self.setWindowIcon(QIcon(self.logo_path))
         self.pb_imp.setIcon(QIcon(utils.get_path(
             config_utils.load_config("style", "icon_imp"))))
@@ -74,7 +77,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.window_interest = None
         self.window_bill = None
         self.window_note = None
-        self.pb_save.setEnabled(False)
+        self.pb_save.setHidden(True)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         first_day_of_week = int(config_utils.load_config("global", "first_day_of_week")) % 7
@@ -92,7 +95,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.update_day_selected()
 
     def cb_autosave_changed(self):
-        self.pb_save.setEnabled(not self.cb_autosave.isChecked())
+        self.pb_save.setHidden(self.cb_autosave.isChecked())
 
     def add_tray(self):
         self.tray = QSystemTrayIcon(self)
@@ -126,9 +129,12 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.action_exit.triggered.connect(self.close_window)
 
         tray_menu.addAction(self.action_diary)
-        tray_menu.addAction(self.action_interest)
-        tray_menu.addAction(self.action_bill)
-        tray_menu.addAction(self.action_note)
+        if self.show_interest:
+            tray_menu.addAction(self.action_interest)
+        if self.show_bill:
+            tray_menu.addAction(self.action_bill)
+        if self.show_note:
+            tray_menu.addAction(self.action_note)
         tray_menu.addSeparator()
         tray_menu.addAction(self.action_exit)
 
@@ -164,8 +170,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 self.disconnect_all()
                 for row in range(6):
                     for col in range(7):
-                        te = self.get_table_text_edit(
-                            self.tw_content, row, col)
+                        te = self.tw_content.get_text(row, col)
                         if te.date == self.date:
                             te.setFocus()
                 self.connect_all()
@@ -189,7 +194,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         tw.setHorizontalHeaderLabels(
             (self.WEEK_DAYS[self.date.dayOfWeek() - 1],))
         diary = self.diaries.get(utils.date2int(self.date.toPython()))
-        te = self.get_table_text_edit(tw, 0, 0)
+        te = tw.get_text(0, 0)
         self.reconnect(te.focusOut, self.diary_edited)
         te.setPlainText("")
         te.setEnabled(True)
@@ -213,7 +218,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         for row in range(6):
             for col in range(7):
                 _id = utils.date2int(day.toPython())
-                te = self.get_table_text_edit(tw, row, col)
+                te = tw.get_text(row, col)
                 self.reconnect(te.focusOut, self.diary_edited)
                 te.setPlainText("")
                 if _id in self.diaries:
@@ -288,7 +293,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 updated = True
                 diary.content = text_new
         if self.cb_autosave.isChecked() and updated:
-            self.start_task(diary_utils.update_diary, diary)
+            self.start_task(diary_utils.update_diary, (diary,))
 
     def btn_save(self):
         _id = utils.date2int(self.date.toPython())
@@ -298,12 +303,12 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         tw = self.tw_content
         row = tw.currentRow()
         col = tw.currentColumn()
-        te = self.get_table_text_edit(tw, row, col)
+        te = tw.get_text(row, col)
         self.reconnect(te.focusOut, self.diary_edited)
         text_new = te.toPlainText()
         if diary.content != text_new:
             diary.content = text_new
-        self.start_task(diary_utils.update_diaries, self.diaries)
+        self.start_task(diary_utils.update_diaries, (self.diaries,))
 
     def btn_export(self):
         file, _ = QFileDialog.getSaveFileName(self, tr(
@@ -389,11 +394,14 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             if event.key() == Qt.Key.Key_S:
                 self.btn_save()
             elif event.key() == Qt.Key.Key_I:
-                self.open_interest_window()
+                if self.show_interest:
+                    self.open_interest_window()
             elif event.key() == Qt.Key.Key_B:
-                self.open_bill_window()
+                if self.show_bill:
+                    self.open_bill_window()
             elif event.key() == Qt.Key.Key_N:
-                self.open_note_window()
+                if self.show_note:
+                    self.open_note_window()
             elif event.key() == Qt.Key.Key_M:
                 self.set_monthly_view()
             elif event.key() == Qt.Key.Key_D:
@@ -430,4 +438,4 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.hide()
 
     def close_window(self):
-        QCoreApplication.exit(0)
+        sys.exit()

@@ -1,7 +1,7 @@
 from core.interest.interest import Ui_Interest
 
 from core.interest import interest_utils
-from core.util.qt_utils import BaseWindow, NoSelectionDelegate, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
+from core.util.qt_utils import BaseWindow, ComboBox, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -40,8 +40,6 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.sort = 0
         self.filter = ''
         self.row_interest = -1
-        self.interests: list[interest_utils.Interest] = interest_utils.get_list_by(
-            sort=self.sort)
         self.interest = None
         self.cb_sort.addItems(self.sorts)
         self.cb_sort.setCurrentIndex(self.sort)
@@ -59,7 +57,8 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.tw_interest.setColumnWidth(5, 90)
         self.tw_interest.setColumnWidth(6, 90)
         self.tw_interest.hideColumn(0)
-        self.tw_interest.setItemDelegate(NoSelectionDelegate())
+        self.tw_interest.set_delegate(col_dict={3: ComboBox}, labels_dict={3: self.sorts})
+        self.interests = interest_utils.get_list_by(sort=self.sort)
         self.update_table_interest()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
@@ -78,8 +77,8 @@ class InterestWindow(Ui_Interest, BaseWindow):
             if ok_pressed == QMessageBox.No:
                 return
             interest_utils.delete(sort=self.sort)
-            self.interests = interest_utils.get_list_by(sort=self.sort)
-            self.update_table_interest()
+            self.start_task(interest_utils.get_list_by, kwargs={'sort': self.sort},
+                            complete=self.update_table_interest)
         else:
             return super().keyPressEvent(event)
 
@@ -95,7 +94,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         if self.interest is None:
             return
         self.interests.remove(self.interest)
-        self.start_task(interest_utils.delete, id=self.interest.id)
+        self.start_task(interest_utils.delete, kwargs={'id': self.interest.id})
         self.interest = None
         self.update_table_interest()
 
@@ -104,9 +103,9 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self, tr("Import from xlsx file [REPLACE!]"), "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             interest_utils.imp(file)
-            self.interests = interest_utils.get_list_by(sort=self.sort)
             self.interest = None
-            self.update_table_interest()
+            self.start_task(interest_utils.get_list_by, kwargs={'sort': self.sort},
+                            complete=self.update_table_interest)
 
     def btn_exp(self):
         file, _ = QFileDialog.getSaveFileName(self, tr("Export to xlsx file"), "interest.xlsx",
@@ -125,8 +124,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         if self.row_interest < 0:
             self.interest = None
         else:
-            id_row = self.get_table_value(
-                self.tw_interest, self.row_interest, 0)
+            id_row = self.tw_interest.get_value(self.row_interest, 0)
             for i in range(len(self.interests)):
                 if self.interests[i].id == id_row:
                     self.interest = self.interests[i]
@@ -141,57 +139,43 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.update_table_interest()
 
     def interest_edited(self, row, col):
-        if col == 3 or self.interest is None:
+        if self.interest is None:
             return
         self.disconnect_all()
         tw = self.tw_interest
         interest = self.interest
-        value = self.get_table_value(tw, row, col)
+        value = tw.get_value(row, col)
+        if col == 3:
+            value = self.sorts.index(value)
         interest.set_param(col, value)
-        self.start_task(interest_utils.update, interest)
+        self.start_task(interest_utils.update, (interest,))
         self.connect_all()
 
-    def sort_edited(self):
-        if not self.interest:
-            return
-        cb = self.sender()
-        self.interest.sort = cb.currentIndex() + 1
-        self.set_table_value(self.tw_interest, self.row_interest,
-                             3, self.sorts[self.interest.sort])
-        self.start_task(interest_utils.update, self.interest)
-
-    def update_table_interest(self):
+    def update_table_interest(self, interests=None):
+        self.interests = interests if interests is not None else self.interests
         self.disconnect_all()
         tw = self.tw_interest
         tw.setRowCount(len(self.interests))
         tw.setSortingEnabled(False)
         for row in range(tw.rowCount()):
             interest = self.interests[row]
-            cb_sort = self.get_table_combo(tw, row, 3, self.sorts[1:])
-            cb_sort.setCurrentIndex(interest.sort - 1)
-            self.reconnect(cb_sort.currentIndexChanged, self.sort_edited)
-            self.set_table_value(tw, row, 0, interest.id)
-            self.set_table_value(
-                tw, row, 1, interest.added, False, center=True)
-            self.set_table_value(tw, row, 2, interest.name)
-            self.set_table_value(
-                tw, row, 3, self.sorts[interest.sort], center=True)
-            self.set_table_value(tw, row, 4, interest.progress, center=True)
-            self.set_table_value(tw, row, 5, interest.publish, center=True)
-            self.set_table_value(tw, row, 6, interest.date, center=True)
-            self.set_table_value(tw, row, 7, float(
-                interest.score_db), center=True)
-            self.set_table_value(tw, row, 8, float(
-                interest.score_imdb), center=True)
-            self.set_table_value(tw, row, 9, float(
-                interest.score), center=True)
-            self.set_table_value(tw, row, 10, interest.remark)
-            tw.setRowHidden(
-                row, len(self.filter) > 0 and self.filter.upper() not in str(interest).upper())
+            tw.set_item(row, 0, interest.id)
+            tw.set_item(row, 1, interest.added, False, center=True)
+            tw.set_item(row, 2, interest.name)
+            tw.set_item(row, 3, self.sorts[interest.sort], center=True)
+            tw.set_item(row, 4, interest.progress, center=True)
+            tw.set_item(row, 5, interest.publish, center=True)
+            tw.set_item(row, 6, interest.date, center=True)
+            tw.set_item(row, 7, float(interest.score_db), center=True)
+            tw.set_item(row, 8, float(interest.score_imdb), center=True)
+            tw.set_item(row, 9, float(interest.score), center=True)
+            tw.set_item(row, 10, interest.remark)
+            tw.setRowHidden(row, len(self.filter) > 0 and
+                            self.filter.upper() not in (str(interest) + tw.get_value(row, 3)).upper())
         tw.setSortingEnabled(True)
         if self.interest is not None:
             for row in range(tw.rowCount()):
-                if self.get_table_value(tw, row, 0) == interest.id:
+                if tw.get_value(row, 0) == interest.id:
                     self.tw_interest.selectRow(row)
                     self.row_interest = row
                     break

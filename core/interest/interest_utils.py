@@ -125,6 +125,7 @@ def update(interest: Interest):
     interest.name = interest.name.strip()
     interest.progress = interest.progress.strip()
     interest.remark = interest.remark.strip()
+    interest.sort = interest.sort or 7
     sql_cmd = "UPDATE interest SET `added`=?, `updated`=?, `name`=?, `sort`=?, `progress`=?, `publish`=?, `date`=?,\
                            `score_db`=?, `score_imdb`=?, `score`=?, `remark`=? WHERE `id`=?"
     return sql_utils.execute(sql_cmd, (*interest.params(), interest.id))

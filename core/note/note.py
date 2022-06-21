@@ -15,10 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
-    QHBoxLayout, QHeaderView, QLineEdit, QMainWindow,
-    QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLayout,
+    QHeaderView, QLineEdit, QMainWindow, QPushButton,
+    QSizePolicy, QSpacerItem, QTableWidgetItem, QVBoxLayout,
+    QWidget)
+
+from core.util.qt_utils import (ComboBox, TableWidget)
 
 class Ui_Note(object):
     def setupUi(self, Note):
@@ -35,7 +37,7 @@ class Ui_Note(object):
 
         self.horizontalLayout_2.addItem(self.hs_sort)
 
-        self.cb_state = QComboBox(self.centralwidget)
+        self.cb_state = ComboBox(self.centralwidget)
         self.cb_state.setObjectName(u"cb_state")
 
         self.horizontalLayout_2.addWidget(self.cb_state)
@@ -43,7 +45,7 @@ class Ui_Note(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
-        self.tw_note = QTableWidget(self.centralwidget)
+        self.tw_note = TableWidget(self.centralwidget)
         self.tw_note.setObjectName(u"tw_note")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
