@@ -16,9 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QAbstractSpinBox, QApplication, QDateEdit,
-    QFrame, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QMainWindow, QPushButton, QSizePolicy,
-    QSpacerItem, QTableWidgetItem, QVBoxLayout, QWidget)
+    QDateTimeEdit, QFrame, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QMainWindow, QPushButton,
+    QSizePolicy, QSpacerItem, QTableWidgetItem, QVBoxLayout,
+    QWidget)
 
 from core.util.qt_utils import (DoubleSpinBox, TableWidget)
 
@@ -26,7 +27,7 @@ class Ui_Bill(object):
     def setupUi(self, Bill):
         if not Bill.objectName():
             Bill.setObjectName(u"Bill")
-        Bill.resize(600, 800)
+        Bill.resize(602, 800)
         self.centralwidget = QWidget(Bill)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -35,6 +36,7 @@ class Ui_Bill(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.de_start = QDateEdit(self.centralwidget)
         self.de_start.setObjectName(u"de_start")
+        self.de_start.setCurrentSection(QDateTimeEdit.YearSection)
         self.de_start.setCalendarPopup(True)
 
         self.horizontalLayout_2.addWidget(self.de_start)
@@ -46,6 +48,7 @@ class Ui_Bill(object):
 
         self.de_end = QDateEdit(self.centralwidget)
         self.de_end.setObjectName(u"de_end")
+        self.de_end.setCurrentSection(QDateTimeEdit.YearSection)
         self.de_end.setCalendarPopup(True)
 
         self.horizontalLayout_2.addWidget(self.de_end)
@@ -132,6 +135,13 @@ class Ui_Bill(object):
 
         self.horizontalLayout.addWidget(self.le_filter)
 
+        self.de_month = QDateEdit(self.centralwidget)
+        self.de_month.setObjectName(u"de_month")
+        self.de_month.setCurrentSection(QDateTimeEdit.YearSection)
+        self.de_month.setCalendarPopup(True)
+
+        self.horizontalLayout.addWidget(self.de_month)
+
         self.hs_operate = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.hs_operate)
@@ -190,6 +200,7 @@ class Ui_Bill(object):
         self.lb_in.setText(QCoreApplication.translate("Bill", u"IN", None))
         self.lb_out.setText(QCoreApplication.translate("Bill", u"OUT", None))
         self.le_filter.setPlaceholderText(QCoreApplication.translate("Bill", u"Search here.", None))
+        self.de_month.setDisplayFormat(QCoreApplication.translate("Bill", u"yyyy/MM", None))
 #if QT_CONFIG(tooltip)
         self.pb_imp.setToolTip(QCoreApplication.translate("Bill", u"Ctrl+I: Import", None))
 #endif // QT_CONFIG(tooltip)

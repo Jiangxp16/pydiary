@@ -4,7 +4,8 @@ import time
 from core.diary import diary_utils
 from core.diary.diary import Ui_Diary
 from core.util.qt_utils import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
-                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView, QPixmap, QCoreApplication)
+                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView, QPixmap, QApplication,
+                                QMessageBox)
 from core.util import utils, config_utils, dbconfig_utils
 from core.util.i18n_utils import tr
 
@@ -74,6 +75,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.action_note.setText(tr("Note"))
         self.action_exit.setText(tr("Exit"))
 
+        self.window_last = self
         self.window_interest = None
         self.window_bill = None
         self.window_note = None
@@ -88,8 +90,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             6 if first_day_of_week < 2 else first_day_of_week - 1
         self.calendar.setFirstDayOfWeek(Qt.DayOfWeek(first_day_of_week))
         self.date = QDate.currentDate()
-        self.diaries = diary_utils.get_month_diary(
-            self.date.year(), self.date.month())
+        self.diaries = diary_utils.get_month_diary(self.date.year(), self.date.month())
         self.calendar.setSelectedDate(self.date)
         self.set_daily_view()
         self.update_day_selected()
@@ -198,6 +199,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.reconnect(te.focusOut, self.diary_edited)
         te.setPlainText("")
         te.setEnabled(True)
+        te.setStyleSheet("background-color: transparent;")
         if diary is not None:
             te.setPlainText(diary.content)
         self.connect_all()
@@ -224,8 +226,10 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 if _id in self.diaries:
                     te.setPlainText(self.diaries[_id].content)
                 te.setEnabled(True)
+                te.setStyleSheet("background-color: transparent;")
                 if day_first.daysTo(day) < 0 or day_last.daysTo(day) > 0:
                     te.setEnabled(False)
+                    te.setStyleSheet("background-color: grey;")
                 te.date = day
                 day = day.addDays(1)
         self.connect_all()
@@ -265,8 +269,12 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def get_first_day_of_current_page(self):
         day = QDate(self.date.year(), self.date.month(), 1)
+        n = 0
         while day.dayOfWeek() != self.first_day_of_week:
             day = day.addDays(-1)
+            n += 1
+        if n == 0:
+            day = day.addDays(-7)
         return day
 
     def diary_edited(self):
@@ -336,7 +344,17 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def tray_activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self.open_last_window()
+
+    def open_last_window(self):
+        if self.window_last == self:
             self.show_or_hide_window()
+        elif self.window_last == self.window_bill:
+            self.open_bill_window()
+        elif self.window_last == self.window_interest:
+            self.open_interest_window()
+        elif self.window_last == self.window_note:
+            self.open_note_window()
 
     def open_interest_window(self):
         if self.window_interest is None:
@@ -354,6 +372,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.window_interest.activateWindow()
         else:
             self.window_interest.hide()
+        self.window_last = self.window_interest
 
     def open_bill_window(self):
         if self.window_bill is None:
@@ -371,6 +390,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.window_bill.activateWindow()
         else:
             self.window_bill.hide()
+        self.window_last = self.window_bill
 
     def open_note_window(self):
         if self.window_note is None:
@@ -388,6 +408,9 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.window_note.activateWindow()
         else:
             self.window_note.hide()
+        QApplication.processEvents()
+        self.window_note.update_table_note()
+        self.window_last = self.window_note
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
@@ -436,6 +459,13 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.activateWindow()
         else:
             self.hide()
+        self.window_last = self
 
     def close_window(self):
+        confirm_at_exit = int(config_utils.load_config("global", "confirm_at_exit"))
+        if confirm_at_exit:
+            ok_pressed = QMessageBox.question(self, tr("Exit Program"), tr("Are you sure to exit program?"),
+                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            if ok_pressed == QMessageBox.No:
+                return
         sys.exit()

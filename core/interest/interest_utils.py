@@ -86,6 +86,7 @@ def add(interest=None, **kwargs):
         interest = Interest(**kwargs)
         interest.updated = utils.date2int(datetime.date.today())
         interest.added = utils.date2int(datetime.date.today())
+        interest.date = utils.date2int(datetime.date.today()) // 100
     if sql_utils.execute("INSERT INTO interest (`added`, `updated`, `name`, `sort`, `progress`, `publish`, `date`, \
                            `score_db`, `score_imdb`, `score`, `remark`) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                          interest.params()):

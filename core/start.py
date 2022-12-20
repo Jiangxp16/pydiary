@@ -1,7 +1,11 @@
 import sys
+import os
 import atexit
-import traceback
-import time
+
+name_exec = sys.argv[0]
+if name_exec.endswith(".exe"):
+    os.chdir(os.path.dirname(name_exec))
+
 sys.path.append('./')
 
 
@@ -9,12 +13,14 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     """
     Record exceptions to log
     """
+    import time
+    import traceback
     with open("error.log", "a") as f:
-        err_msg = time.strftime("%Y-%m-%d %H:%M:%S")
-        err_msg += " "
-        err_msg += ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        err_msg = time.strftime("%Y-%m-%d %H:%M:%S ") + \
+            ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
         f.write(err_msg)
     sys.__excepthook__(exc_type, exc_value, exc_traceback)
+    sys.exit(-1)
 
 
 sys.excepthook = handle_exception
@@ -36,7 +42,7 @@ if not shared.create(1):
     shared.detach()
     if not shared.create(1):
         show_msg("Another instance is already running.", "WARNING")
-        sys.exit(0)
+        os._exit(0)
 
 
 @atexit.register

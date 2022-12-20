@@ -2,8 +2,10 @@ import os
 
 from PySide6.QtGui import QGuiApplication, QCloseEvent, QTextCursor, QFocusEvent, QKeyEvent, QPixmap, QImage, QIcon, QAction, QFont
 from PySide6.QtCore import QAbstractItemModel, QCoreApplication, QModelIndex, QObject, QDate, QPersistentModelIndex, QRect, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
-from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog, QItemDelegate, QStyledItemDelegate, QItemEditorFactory
-
+from PySide6.QtWidgets import (QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox,
+                               QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle,
+                               QInputDialog, QItemDelegate, QStyledItemDelegate, QItemEditorFactory, QAbstractItemView, QDateTimeEdit,
+                               )
 from core.util import utils, config_utils
 
 
@@ -155,7 +157,7 @@ class DoubleSpinBox(QDoubleSpinBox):
     def textFromValue(self, val: float) -> str:
         text = super().textFromValue(val)
         if "." in text:
-            text = text.rstrip("0")
+            text = text.rstrip("0").rstrip(".")
         return text
 
     def wheelEvent(self, event: QEvent) -> None:

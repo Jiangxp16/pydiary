@@ -29,8 +29,9 @@ config = {
         "multi_thread": 1,
         "login_expired": 0,
         "hide_on_startup": 0,
-        "show_lunar": 1,
         "start_on_startup": 0,
+        "confirm_at_exit": 0,
+        "show_lunar": 1,
         "show_bill": 1,
         "show_interest": 1,
         "show_note": 1,
@@ -64,8 +65,8 @@ if os.path.isfile(CONFIG_FILE):
             config[seg].update(config_personalize[seg])
 
 
-def load_config(seg, key=None):
+def load_config(seg, key=None, default=None):
     val = config.get(seg, {})
     if key is not None:
-        val = val.get(key)
+        val = val.get(key, default)
     return val
