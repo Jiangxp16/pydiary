@@ -347,14 +347,24 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.open_last_window()
 
     def open_last_window(self):
-        if self.window_last == self:
-            self.show_or_hide_window()
-        elif self.window_last == self.window_bill:
+        ui_default = config_utils.load_config("global", "ui_default", "none")
+        if ui_default == "bill":
             self.open_bill_window()
-        elif self.window_last == self.window_interest:
+        elif ui_default == "diary":
+            self.show_or_hide_window()
+        elif ui_default == "interest":
             self.open_interest_window()
-        elif self.window_last == self.window_note:
+        elif ui_default == "note":
             self.open_note_window()
+        else:
+            if self.window_last == self:
+                self.show_or_hide_window()
+            elif self.window_last == self.window_bill:
+                self.open_bill_window()
+            elif self.window_last == self.window_interest:
+                self.open_interest_window()
+            elif self.window_last == self.window_note:
+                self.open_note_window()
 
     def open_interest_window(self):
         if self.window_interest is None:

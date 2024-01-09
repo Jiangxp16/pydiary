@@ -134,7 +134,10 @@ def imp(file):
         ws = wb.active
         for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
             diary = Diary(*(cell.value for cell in row))
-            diary_dict[diary.id] = diary
+            if get_by(id=diary.id):
+                diary_dict[diary.id] = diary
+            else:
+                add(diary)
         return update_diaries(diary_dict)
     except Exception as e:
         print(e.args)

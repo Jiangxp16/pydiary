@@ -193,9 +193,9 @@ class Ui_Bill(object):
 
     def retranslateUi(self, Bill):
         Bill.setWindowTitle(QCoreApplication.translate("Bill", u"BILL", None))
-        self.de_start.setDisplayFormat(QCoreApplication.translate("Bill", u"yyyyMMdd", None))
+        self.de_start.setDisplayFormat(QCoreApplication.translate("Bill", u"yyyy/MM/dd", None))
         self.label.setText(QCoreApplication.translate("Bill", u"~", None))
-        self.de_end.setDisplayFormat(QCoreApplication.translate("Bill", u"yyyyMMdd", None))
+        self.de_end.setDisplayFormat(QCoreApplication.translate("Bill", u"yyyy/MM/dd", None))
         self.lb_total.setText(QCoreApplication.translate("Bill", u"TOTAL", None))
         self.lb_in.setText(QCoreApplication.translate("Bill", u"IN", None))
         self.lb_out.setText(QCoreApplication.translate("Bill", u"OUT", None))
