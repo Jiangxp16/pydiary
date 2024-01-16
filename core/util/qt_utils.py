@@ -1,4 +1,10 @@
+import hashlib
 import os
+import platform
+if platform.system() == 'Windows':
+    import win32event
+    import win32api
+    import winerror
 
 from PySide6.QtGui import QGuiApplication, QCloseEvent, QTextCursor, QFocusEvent, QKeyEvent, QPixmap, QImage, QIcon, QAction, QFont
 from PySide6.QtCore import QAbstractItemModel, QCoreApplication, QModelIndex, QObject, QDate, QPersistentModelIndex, QRect, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
@@ -6,7 +12,68 @@ from PySide6.QtWidgets import (QWidget, QApplication, QMainWindow, QWidgetAction
                                QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle,
                                QInputDialog, QItemDelegate, QStyledItemDelegate, QItemEditorFactory, QAbstractItemView, QDateTimeEdit,
                                )
+from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from core.util import utils, config_utils
+
+
+class SingleInstanceApp(QApplication):
+    activationRequested = Signal()
+
+    def __init__(self, argv):
+        super().__init__(argv)
+        path_hash = hashlib.md5(self.applicationFilePath().encode("utf-8")).hexdigest()
+        self.server_name = f"DIARY_{path_hash}"
+        self.server = QLocalServer(self)
+        self.is_running = False
+        QLocalServer.removeServer(self.server_name)
+        listening = self.server.listen(self.server_name)
+        if not listening:
+            self.activate_existing_instance()
+            self.is_running = True
+            return
+
+        self.mutex = None
+        if platform.system() == 'Windows':
+            mutex = win32event.CreateMutex(None, 1, self.server_name)
+            wait_result = win32event.WaitForSingleObject(mutex, 0)
+            if wait_result == win32event.WAIT_OBJECT_0 or wait_result == win32event.WAIT_ABANDONED:
+                self.mutex = mutex
+            else:
+                self.server.close()
+                self.activate_existing_instance()
+                self.is_running = True
+                return
+
+        self.server.newConnection.connect(self.handle_new_connection)
+
+    def handle_new_connection(self):
+        connection = self.server.nextPendingConnection()
+        if connection:
+            connection.waitForReadyRead(1000)
+            message = bytes(connection.readAll()).decode('utf-8').strip()
+            if message == 'activate':
+                self.activationRequested.emit()
+            connection.close()
+
+    def activate_existing_instance(self):
+        socket = QLocalSocket(self)
+        socket.connectToServer(self.server_name)
+        if socket.waitForConnected(1000):
+            socket.write(b'activate')
+            socket.waitForBytesWritten(1000)
+            socket.close()
+
+    def exec(self):
+        if self.is_running:
+            return 0
+        return super().exec()
+
+    def __del__(self):
+        if self.server.isListening():
+            self.server.close()
+        if self.mutex is not None and platform.system() == 'Windows':
+            win32event.ReleaseMutex(self.mutex)
+            self.mutex = None
 
 
 class TextEdit(QPlainTextEdit):
@@ -275,6 +342,10 @@ class StateLabel(QLabel):
 
 
 class TableWidget(QTableWidget):
+
+    def __init__(self, parent=None):
+        QTableWidget.__init__(self, parent)
+        self.horizontalHeader().setSortIndicatorClearable(True)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
