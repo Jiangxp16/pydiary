@@ -1,0 +1,191 @@
+*{
+	color: black;
+	font-family: Cambria, Microsoft YaHei; /*Calibri, Georgia, Cambria, Times New Roman*/
+	font-size: 14px;
+	line-height: 14px;
+	selection-background-color: #e4e4e4;
+	selection-color: black;
+	border-width: 1px;
+	text-align: center;
+}
+
+QTextEdit,
+QPlainTextEdit,
+QLineEdit,
+QSpinBox,
+QDoubleSpinBox,
+QToolButton,
+QPushButton,
+QComboBox {
+	border-width: 1px;
+	border-style: solid;
+	border-color: gray;
+	background-color: white;
+	padding: 2px;
+	border-radius: 2px;
+}
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QLineEdit:focus,
+QSpinBox:focus,
+QDoubleSpinBox:focus,
+QToolButton:focus,
+QPushButton:focus,
+QComboBox:focus {
+    border-width: 2px;
+}
+
+QPushButton {
+	text-transform: uppercase;
+	font-weight: bold;
+	padding: 1px 10px;
+}
+
+QPushButton:flat {
+	border: 1px solid rgba(0, 0, 0, 0.2);;;
+	background-color: transparent;
+}
+
+QToolButton:hover,
+QPushButton:hover,
+QTextEdit:hover,
+QPlainTextEdit:hover,
+QLineEdit:hover,
+QSpinBox:hover,
+QDoubleSpinBox:hover,
+QComboBox:hover{
+	border-color: rgba(49, 147, 250, 255);
+}
+
+QToolButton:pressed,
+QPushButton:pressed{
+	color: white;
+	background-color: rgba(49, 147, 250, 255);
+}
+
+QToolButton:disabled,
+QPushButton:disabled,
+QLineEdit:disabled,
+QSpinBox:disabled,
+QDoubleSpinBox:disabled,
+QComboBox:disabled{
+	color: black;
+	background-color: rgb(227,227,227);
+}
+
+QProgressBar {
+	color: white;
+	border-color: rgb(230, 230, 230);
+	background-color: gray;
+}
+QProgressBar::chunk {
+	background-color: rgba(49, 147, 250, 1);
+}
+
+QCheckBox:disabled,
+QRadioButton:disabled {
+	color: gray;
+}
+
+QCheckBox:hover,
+QRadioButton:hover  {
+	border-style: solid;
+	border-color: transparent;
+}
+
+QStatusBar {
+	font-family: Consolas;
+	font-size: 13px;
+	color:#027f7f;
+}
+QScrollArea {
+	color: #FFFFFF;
+	background-color:#000000;
+}
+QSlider::groove:horizontal,
+QSlider::groove:vertical {
+	height: 5px;
+	background-color: rgba(49, 147, 250, 255);
+}
+QSlider::handle:horizontal {
+	background: rgb(253,253,253);
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(207,207,207);
+	width: 12px;
+	margin: -5px 0;
+	border-radius: 7px;
+}
+QSlider::handle:vertical {
+	background: rgb(253,253,253);
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(207,207,207);
+	height: 12px;
+	margin: 0 -5px;
+	border-radius: 7px;
+}
+QSlider::add-page:horizontal,
+QSlider::add-page:vertical{
+	background: rgb(181,181,181);
+}
+QSlider::sub-page:horizontal,
+QSlider::sub-page:vertical {
+	background-color: rgba(49, 147, 250, 255);
+}
+
+QTabBar{
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+QGroupBox {
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+QDockWidget {
+	text-transform: uppercase;
+}
+
+QToolBox::tab {
+	text-transform: uppercase;
+}
+
+QTableView,
+QTreeView,
+QListView {
+	border: 1px solid black;
+    padding: 0px 0px;
+    outline: 2px solid rgba(49, 147, 250, 255);
+}
+
+QTableView::item,
+QTreeView::item,
+QListView::item {
+	border: 0px;
+	padding: 0 0px;
+    color: black;
+}
+
+QTableView::item:selected,
+QTreeView::item:selected,
+QListView::item:selected {
+	border: 0px;
+	padding: 0 0px;
+    color: black;
+    background-color: #e4e4e4;
+}
+QTableView::item:selected:focus,
+QTreeView::item:selected:focus,
+QListView::item:selected:focus {
+    color: black;
+	border: 1px solid white;
+}
+
+QHeaderView::section,
+QTableCornerButton::section{
+	border:1px solid #b4bac2;
+	border-left:none;
+    background-color: #f7fbff;
+}
