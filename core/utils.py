@@ -3,23 +3,25 @@ import os
 import sys
 import configparser
 import holidays
-from lunardate import LunarDate
+import sxtwl
 
 CONFIG_FILE = "config.ini"
 num_latin = '0123456789'
 num_chs = '〇一二三四五六七八九'
 trans_latin_to_chs = str.maketrans(num_latin, num_chs)
+JQ_LIST = ["冬至", "小寒", "大寒", "立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏",
+           "小满", "芒种", "夏至", "小暑", "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降",
+           "立冬", "小雪", "大雪"]
 
 
-def solar_to_lunar(solar_date: datetime.date):
-    lunar_date = LunarDate.fromSolarDate(solar_date.year, solar_date.month, solar_date.day)
-    return lunar_date
+def lunar_string(solar_date):
+    date = sxtwl.fromSolar(solar_date.year, solar_date.month, solar_date.day)
+    year = date.getLunarYear()
+    month = date.getLunarMonth()
+    day = date.getLunarDay()
+    jq_index = date.getJieQi()
+    jq = None if jq_index > len(JQ_LIST) - 1 or jq_index < 0 else JQ_LIST[jq_index]
 
-
-def lunar_tostring(lunar_date: LunarDate):
-    year = lunar_date.year
-    month = lunar_date.month
-    day = lunar_date.day
     year_chs = str(year).translate(trans_latin_to_chs)
     month_chs = str(month).translate(trans_latin_to_chs)
     day_chs = str(day).translate(trans_latin_to_chs)
@@ -40,7 +42,10 @@ def lunar_tostring(lunar_date: LunarDate):
     if len(day_chs) == 1:
         day_chs = "初" + day_chs
 
-    return "%s年%s月%s" % (year_chs, month_chs, day_chs)
+    res = "%s年%s月%s" % (year_chs, month_chs, day_chs)
+    if jq:
+        res += " " + jq
+    return res
 
 
 def read_config(config_file, item_name, key=None):
@@ -50,9 +55,8 @@ def read_config(config_file, item_name, key=None):
         config.optionxform = lambda optionstr: optionstr
         config.read(config_file, encoding='utf-8')
         res_dict = dict(config.items(item_name))
-    except Exception as e:
-        print(e.args)
-        print('Failed reading config_file: %s.' % config_file)
+    except Exception:
+        pass
     if key is not None:
         return res_dict.get(key)
     return res_dict

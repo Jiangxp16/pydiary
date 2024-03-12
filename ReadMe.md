@@ -36,10 +36,10 @@ Developed with python 3.10.6.
 ```
 pyside6==6.6.2
 pillow==10.2.0
-lunardate=0.2.2
 openpyxl=3.1.2
 pyinstaller=6.4.0
 holidays==0.44
+sxtwl==2.0.6
 ```
 
 ## **Config**

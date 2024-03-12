@@ -57,7 +57,7 @@ a2 = Analysis(
     noarchive=False,
 )
 exe2 = EXE(
-    pyz,
+    PYZ(a2.pure),
     a2.scripts,
     exclude_binaries=True,
     # contents_directory='.', # default to _internal

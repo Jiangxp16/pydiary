@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>DIARY</string>
   </property>
+  <property name="locale">
+   <locale language="Chinese" country="China"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
     <item>

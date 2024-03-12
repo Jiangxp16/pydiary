@@ -186,10 +186,10 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         self.connect_all()
 
     def update_day_selected(self):
-        location = QLocale.countryToCode(self.locale().country())
+        location = utils.load_config("global", "location") or QLocale.countryToCode(self.locale().country())
         date_info = ""
         if location == "CN":
-            date_info = utils.lunar_tostring(utils.solar_to_lunar(self.date.toPython()))
+            date_info = utils.lunar_string(self.date.toPython())
         holiday = utils.get_holiday(self.date.toPython(), location)
         if holiday is not None:
             if date_info:

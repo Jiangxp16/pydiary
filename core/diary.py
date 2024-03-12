@@ -30,6 +30,7 @@ class Ui_Diary(object):
         font.setFamilies([u"Times New Roman"])
         font.setPointSize(12)
         Diary.setFont(font)
+        Diary.setLocale(QLocale(QLocale.Chinese, QLocale.China))
         self.actionEXPORT = QAction(Diary)
         self.actionEXPORT.setObjectName(u"actionEXPORT")
         self.actionIMPORT = QAction(Diary)
