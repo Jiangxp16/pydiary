@@ -2,6 +2,7 @@ import datetime
 import os
 import sys
 import configparser
+import holidays
 from lunardate import LunarDate
 
 CONFIG_FILE = "config.ini"
@@ -107,3 +108,8 @@ def load_qss(app):
     if font_size is not None:
         style_sheet += "\r\n*{font-size:%spx;}" % font_size
     app.setStyleSheet(style_sheet)
+
+
+def get_holiday(date: datetime.date, loc):
+    holiday_dict = holidays.CountryHoliday(loc, years=date.year)
+    return holiday_dict.get(date, None)

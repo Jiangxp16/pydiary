@@ -85,6 +85,10 @@ class Ui_Diary(object):
 
         self.horizontalLayout_4.addWidget(self.pb_save)
 
+        self.horizontalSpacer_3 = QSpacerItem(10, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_4.addItem(self.horizontalSpacer_3)
+
         self.pb_export = QPushButton(self.centralwidget)
         self.pb_export.setObjectName(u"pb_export")
 
@@ -107,15 +111,15 @@ class Ui_Diary(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.label_3 = QLabel(self.centralwidget)
-        self.label_3.setObjectName(u"label_3")
+        self.lb_weather = QLabel(self.centralwidget)
+        self.lb_weather.setObjectName(u"lb_weather")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
-        self.label_3.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.lb_weather.sizePolicy().hasHeightForWidth())
+        self.lb_weather.setSizePolicy(sizePolicy)
 
-        self.horizontalLayout_3.addWidget(self.label_3)
+        self.horizontalLayout_3.addWidget(self.lb_weather)
 
         self.le_weather = QLineEdit(self.centralwidget)
         self.le_weather.setObjectName(u"le_weather")
@@ -124,12 +128,12 @@ class Ui_Diary(object):
 
         self.horizontalLayout_3.addWidget(self.le_weather)
 
-        self.label_4 = QLabel(self.centralwidget)
-        self.label_4.setObjectName(u"label_4")
-        sizePolicy.setHeightForWidth(self.label_4.sizePolicy().hasHeightForWidth())
-        self.label_4.setSizePolicy(sizePolicy)
+        self.lb_location = QLabel(self.centralwidget)
+        self.lb_location.setObjectName(u"lb_location")
+        sizePolicy.setHeightForWidth(self.lb_location.sizePolicy().hasHeightForWidth())
+        self.lb_location.setSizePolicy(sizePolicy)
 
-        self.horizontalLayout_3.addWidget(self.label_4)
+        self.horizontalLayout_3.addWidget(self.lb_location)
 
         self.le_location = QLineEdit(self.centralwidget)
         self.le_location.setObjectName(u"le_location")
@@ -201,8 +205,8 @@ class Ui_Diary(object):
         self.pb_save.setText(QCoreApplication.translate("Diary", u"SAVE", None))
         self.pb_export.setText(QCoreApplication.translate("Diary", u"EXP", None))
         self.pb_import.setText(QCoreApplication.translate("Diary", u"IMP", None))
-        self.label_3.setText(QCoreApplication.translate("Diary", u"whether:", None))
-        self.label_4.setText(QCoreApplication.translate("Diary", u"location:", None))
+        self.lb_weather.setText(QCoreApplication.translate("Diary", u"whether:", None))
+        self.lb_location.setText(QCoreApplication.translate("Diary", u"location:", None))
         self.pb_monthly.setText(QCoreApplication.translate("Diary", u"MONTH", None))
         self.label_2.setText(QCoreApplication.translate("Diary", u"/", None))
         self.pb_daily.setText(QCoreApplication.translate("Diary", u"DAILY", None))
