@@ -1,4 +1,4 @@
-
+import sys
 from core import sqlutils, utils
 from core.diary import Ui_Diary
 from PySide6.QtGui import QCloseEvent, QKeyEvent, QPixmap, QIcon, QAction
@@ -24,8 +24,8 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         QMainWindow.__init__(self)
         self.setupUi(self)
         self.connections = (
-            (self.widget_calendar.currentPageChanged, self.month_changed),
-            (self.widget_calendar.selectionChanged, self.date_changed),
+            (self.calendar.currentPageChanged, self.month_changed),
+            (self.calendar.selectionChanged, self.date_changed),
             (self.pb_daily.clicked, self.set_daily_view),
             (self.pb_monthly.clicked, self.set_monthly_view),
             (self.tw_content.itemSelectionChanged, self.diary_selected_changed),
@@ -35,12 +35,14 @@ class DiaryWindow(Ui_Diary, QMainWindow):
             (self.pb_save.clicked, self.btn_save),
             (self.pb_export.clicked, self.btn_export),
             (self.pb_import.clicked, self.btn_import),
+            (self.cb_autosave.clicked, self.cb_autosave_changed),
         )
         self.init()
         self.connect_all()
 
     def init(self):
         self.set_i18n()
+        self.pb_save.setEnabled(False)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         delegate = QStyledItemDelegate()
@@ -54,17 +56,20 @@ class DiaryWindow(Ui_Diary, QMainWindow):
             first_day_of_week += 7
         self.first_day_of_week = first_day_of_week
         self.last_day_of_week = first_day_of_week + 6 if first_day_of_week < 2 else first_day_of_week - 1
-        self.widget_calendar.setFirstDayOfWeek(Qt.DayOfWeek(first_day_of_week))
+        self.calendar.setFirstDayOfWeek(Qt.DayOfWeek(first_day_of_week))
         self.date = QDate.currentDate()
         self.diaries = sqlutils.get_month_diary(self.date.year(), self.date.month())
-        self.widget_calendar.setSelectedDate(self.date)
+        self.calendar.setSelectedDate(self.date)
         self.set_daily_view()
         self.update_day_selected()
+
+    def cb_autosave_changed(self):
+        self.pb_save.setEnabled(not self.cb_autosave.isChecked())
 
     def set_i18n(self):
         self.language = utils.load_config("global", "language")
         if self.language == "zh":
-            self.widget_calendar.setLocale(self.locale())
+            self.calendar.setLocale(self.locale())
             self.setWindowTitle("日记")
             self.WEEK_DAYS[:] = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
             self.pb_daily.setText("日视图")
@@ -92,16 +97,16 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         self.tray.show()
 
     def month_changed(self):
-        self.date = QDate(self.widget_calendar.yearShown(), self.widget_calendar.monthShown(), 1)
+        self.date = QDate(self.calendar.yearShown(), self.calendar.monthShown(), 1)
         self.diaries = sqlutils.get_month_diary(self.date.year(), self.date.month())
-        self.widget_calendar.selectedDate()
+        self.calendar.selectedDate()
         if self.view == self.VIEW_DAILY:
             self.update_daily_diary()
         else:
             self.update_monthly_diary()
 
     def date_changed(self):
-        date = self.widget_calendar.selectedDate()
+        date = self.calendar.selectedDate()
         if self.date == date:
             return
         date_ori = self.date
@@ -208,7 +213,7 @@ class DiaryWindow(Ui_Diary, QMainWindow):
         day_first = self.get_first_day_of_current_page()
         current_day = day_first.addDays(row * 7 + col)
         self.date = current_day
-        self.widget_calendar.setSelectedDate(current_day)
+        self.calendar.setSelectedDate(current_day)
         self.update_day_selected()
         self.connect_all()
 
@@ -320,4 +325,4 @@ class DiaryWindow(Ui_Diary, QMainWindow):
 
     def close_window(self):
         sqlutils.close_connection()
-        exit(0)
+        sys.exit(0)

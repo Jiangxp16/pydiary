@@ -19,15 +19,12 @@
   <property name="windowTitle">
    <string>DIARY</string>
   </property>
-  <property name="locale">
-   <locale language="Chinese" country="China"/>
-  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QCalendarWidget" name="widget_calendar">
+       <widget class="QCalendarWidget" name="calendar">
         <property name="minimumSize">
          <size>
           <width>400</width>
