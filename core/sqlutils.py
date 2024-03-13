@@ -61,14 +61,6 @@ def get_between_dates(date1: datetime.date, date2: datetime.date):
     return cur.fetchall()
 
 
-def get_diary_dict(date1: datetime.date, date2: datetime.date):
-    diaries = get_between_dates(date1, date2)
-    diary_dict = OrderedDict()
-    for diary in diaries:
-        diary_dict[diary[0]] = list(diary[1:4])
-    return diary_dict
-
-
 def get_month_diary(year, month):
     _id1 = year * 10000 + month * 100
     _id2 = _id1 + 31
