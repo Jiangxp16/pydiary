@@ -6,6 +6,7 @@ data
 logs/
 *.db
 test*
+tool*
 
 
 # Environments
