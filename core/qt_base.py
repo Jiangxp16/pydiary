@@ -71,11 +71,13 @@ class BaseWindow(QMainWindow):
         return item.data(Qt.ItemDataRole.DisplayRole)
 
     def start_task(self, func, *args, **kwargs):
-        class Task(QRunnable):
-            def run(self):
-                func(*args, **kwargs)
-        task = Task()
-        self.thread_update.start(task)
+        if self.multi_thread:
+            class Task(QRunnable):
+                def run(self):
+                    func(*args, **kwargs)
+            self.thread_update.start(Task())
+        else:
+            func(*args, **kwargs)
 
     def get_table_widget(self, table: QTableWidget, row, col, obj_class):
         widget = table.cellWidget(row, col)
@@ -88,8 +90,12 @@ class BaseWindow(QMainWindow):
             table.setCellWidget(row, col, widget)
         return widget
 
-    def get_table_combo(self, table: QTableWidget, row, col) -> QComboBox:
-        return self.get_table_widget(table, row, col, QComboBox)
+    def get_table_combo(self, table: QTableWidget, row, col, labels=None) -> QComboBox:
+        cb: QComboBox = self.get_table_widget(table, row, col, QComboBox)
+        if labels is not None:
+            cb.clear()
+            cb.addItems(labels)
+        return cb
 
     def get_table_text_edit(self, table: QTableWidget, row, col) -> TextEdit:
         return self.get_table_widget(table, row, col, TextEdit)

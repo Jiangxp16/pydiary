@@ -4,7 +4,7 @@ from core import diary_utils, utils, sqlutils
 from core.diary import Ui_Diary
 from core.interest_window import InterestWindow
 from core.qt_base import (BaseWindow, TextEdit, QKeyEvent, QPixmap, QIcon, QAction, QDate, Qt, QEvent,
-                          QLocale, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
+                          QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
 
 
 class DiaryWindow(Ui_Diary, BaseWindow):
@@ -116,7 +116,6 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 for row in range(6):
                     for col in range(7):
                         te = self.get_table_text_edit(self.tw_content, row, col)
-                        self.reconnect(te.focusOut, self.diary_edited)
                         if te.date == self.date:
                             te.setFocus()
                 self.connect_all()
@@ -236,10 +235,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 updated = True
                 diary.content = text_new
         if self.cb_autosave.isChecked() and updated:
-            if self.multi_thread:
-                self.start_task(diary_utils.update_diary, diary)
-            else:
-                diary_utils.update_diary(diary)
+            self.start_task(diary_utils.update_diary, diary)
 
     def btn_save(self):
         _id = utils.date2int(self.date.toPython())
@@ -254,10 +250,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         text_new = te.toPlainText()
         if diary.content != text_new:
             diary.content = text_new
-        if self.multi_thread:
-            self.start_task(diary_utils.update_diaries, self.diaries)
-        else:
-            diary_utils.update_diaries(self.diaries)
+        self.start_task(diary_utils.update_diaries, self.diaries)
 
     def btn_export(self):
         file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "", filter="Excel File (*.xlsx);; All Files (*);")

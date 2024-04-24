@@ -1,7 +1,7 @@
 from core.interest import Ui_Interest
 
 from core import interest_utils, utils
-from core.qt_base import BaseWindow, QTableWidget, TextEdit, QSizePolicy, QEvent, QFileDialog, QHeaderView, QMessageBox, QKeyEvent, Qt, QPixmap
+from core.qt_base import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QPixmap
 
 
 class InterestWindow(Ui_Interest, BaseWindow):
@@ -14,7 +14,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
             (self.pb_del.clicked, self.btn_del),
             (self.pb_imp.clicked, self.btn_imp),
             (self.pb_exp.clicked, self.btn_exp),
-            (self.le_filter.editingFinished, self.filter_changed),
+            (self.le_filter.editingFinished, self.filter_edited),
             (self.tw_interest.itemSelectionChanged, self.interest_sel_changed),
             (self.cb_sort.currentIndexChanged, self.sort_sel_changed),
             (self.tw_interest.cellChanged, self.interest_edited),
@@ -57,8 +57,6 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self.le_filter.setPlaceholderText("搜索...")
             self.pb_exp.setText("导出")
             self.pb_imp.setText("导入")
-            # self.pb_add.setText("添加")
-            # self.pb_del.setText("删除")
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_D:
@@ -84,10 +82,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         if self.interest is None:
             return
         self.interests.remove(self.interest)
-        if self.multi_thread:
-            self.start_task(interest_utils.delete, id=self.interest.id)
-        else:
-            interest_utils.delete(id=self.interest.id)
+        self.start_task(interest_utils.delete, id=self.interest.id)
         self.interest = None
         self.update_table_interest()
 
@@ -117,7 +112,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
                 self.interest = self.interests[i]
                 break
 
-    def filter_changed(self):
+    def filter_edited(self):
         filter_new = self.le_filter.text()
         if filter_new == self.filter:
             return
@@ -125,32 +120,14 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.update_table_interest()
 
     def interest_edited(self, row, col):
+        if col == 3:
+            return
         self.disconnect_all()
         tw = self.tw_interest
         interest = self.interest
         value = self.get_table_value(tw, row, col)
-        if col == 2:
-            interest.name = value
-        elif col == 4:
-            interest.progress = value
-        elif col == 5:
-            interest.publish = value
-        elif col == 6:
-            interest.date = value
-        elif col == 7:
-            interest.score_db = value
-        elif col == 8:
-            interest.score_imdb = value
-        elif col == 9:
-            interest.score = value
-        elif col == 10:
-            interest.remark = value
-        else:
-            return
-        if self.multi_thread:
-            self.start_task(interest_utils.update, interest)
-        else:
-            interest_utils.update(interest)
+        interest.set_param(col, value)
+        self.start_task(interest_utils.update, interest)
         self.connect_all()
 
     def sort_edited(self):
@@ -159,10 +136,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         cb = self.sender()
         self.interest.sort = cb.currentIndex() + 1
         self.set_table_value(self.tw_interest, self.row_interest, 3, self.sorts[self.interest.sort])
-        if self.multi_thread:
-            self.start_task(interest_utils.update, self.interest)
-        else:
-            interest_utils.update(self.interest)
+        self.start_task(interest_utils.update, self.interest)
 
     def update_table_interest(self):
         self.disconnect_all()
@@ -172,14 +146,12 @@ class InterestWindow(Ui_Interest, BaseWindow):
         tw.setSortingEnabled(False)
         for row in range(tw.rowCount()):
             interest = self.interests[row]
+            cb_sort = self.get_table_combo(tw, row, 3, self.sorts[1:])
+            cb_sort.setCurrentIndex(interest.sort - 1)
+            self.reconnect(cb_sort.currentIndexChanged, self.sort_edited)
             self.set_table_value(tw, row, 0, interest.id)
             self.set_table_value(tw, row, 1, interest.added, False, center=True)
             self.set_table_value(tw, row, 2, interest.name)
-            cb_sort = self.get_table_combo(tw, row, 3)
-            cb_sort.clear()
-            cb_sort.addItems(self.sorts[1:])
-            cb_sort.setCurrentIndex(interest.sort - 1 if interest.sort > 0 else len(self.sorts) - 2)
-            self.reconnect(cb_sort.currentIndexChanged, self.sort_edited)
             self.set_table_value(tw, row, 3, self.sorts[interest.sort], center=True)
             self.set_table_value(tw, row, 4, interest.progress, center=True)
             self.set_table_value(tw, row, 5, interest.publish, center=True)
@@ -188,11 +160,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self.set_table_value(tw, row, 8, float(interest.score_imdb), center=True)
             self.set_table_value(tw, row, 9, float(interest.score), center=True)
             self.set_table_value(tw, row, 10, interest.remark)
-            # self.set_table_value(tw, row, 11, interest.updated, False)
-            if self.filter and self.filter.upper() not in str(interest).upper():
-                tw.setRowHidden(row, True)
-            else:
-                tw.setRowHidden(row, False)
+            tw.setRowHidden(row, len(self.filter) > 0 and self.filter.upper() not in str(interest).upper())
         tw.setSortingEnabled(True)
         if self.interest is not None:
             for row in range(tw.rowCount()):
