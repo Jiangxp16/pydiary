@@ -13,64 +13,94 @@ CREATE TABLE IF NOT EXISTS diary (
 sqlutils.cur.execute(sql_create)
 
 
-def add(date: datetime.date | int, content, weather='', location=''):
-    if not content and not weather and not location:
-        return
-    _id = utils.date2int(date) if isinstance(date, datetime.date) else date
-    return sqlutils.insert("INSERT INTO diary (id, content, weather, location) VALUES (?,?,?,?)",
-                           (_id, content, weather, location))
+class Diary:
+    def __init__(self, id, content=None, weather=None, location=None):
+        self.id = id
+        self.content = content or ""
+        self.weather = weather or ""
+        self.location = location or ""
+
+    def params(self):
+        return (self.content, self.weather, self.location)
+
+    def is_empty(self):
+        return not (self.content or self.weather or self.location)
 
 
-def get_by_date(date: datetime.date | int):
-    _id = utils.date2int(date) if isinstance(date, datetime.date) else date
-    return sqlutils.select_one("SELECT id, content, weather, location FROM diary WHERE id=?", (_id,))
+def add(diary: Diary = None, **kwargs):
+    if diary is None:
+        diary = Diary(**kwargs)
+    if diary.is_empty():
+        return False
+    return sqlutils.insert("INSERT INTO diary (`id`, `content`, `weather`, `location`) VALUES (?,?,?,?)",
+                           (diary.id, *diary.params()))
 
 
-def get_between_dates(date1: datetime.date | int, date2: datetime.date | int):
-    _id1 = utils.date2int(date1) if isinstance(date1, datetime.date) else date1
-    _id2 = utils.date2int(date2) if isinstance(date2, datetime.date) else date2
-    return sqlutils.select("SELECT id, content, weather, location FROM diary WHERE id BETWEEN ? AND ? ORDER BY id",
-                           (_id1, _id2))
+def get_by(**kwargs):
+    sql_cmd = "SELECT `id`, `content`, `weather`, `location` FROM diary"
+    args = []
+    if len(kwargs) > 0:
+        sql_cmd += " WHERE "
+        for key in kwargs:
+            sql_cmd += "`%s`=? AND " % key
+            args.append(kwargs[key])
+        sql_cmd = sql_cmd[:-5]
+    rs = sqlutils.select_one(sql_cmd, args)
+    if rs is None:
+        return None
+    return Diary(*rs)
+
+
+def get_between_dates(date1, date2) -> list[Diary]:
+    rs_list = sqlutils.select("SELECT `id`, `content`, `weather`, `location` FROM diary WHERE id BETWEEN ? AND ? ORDER BY id",
+                              (date1, date2))
+    diaries = []
+    for rs in rs_list:
+        diaries.append(Diary(*rs))
+    return diaries
 
 
 def get_month_diary(year, month):
-    _id1 = year * 10000 + month * 100
-    _id2 = _id1 + 31
-    diaries = get_between_dates(_id1, _id2)
-    return OrderedDict((diary[0], diary[1:4]) for diary in diaries)
+    date1 = year * 10000 + month * 100
+    date2 = date1 + 31
+    diaries = get_between_dates(date1, date2)
+    return OrderedDict((diary.id, diary) for diary in diaries)
 
 
-def update(date: datetime.date | int, content, weather='', location=''):
-    _id = utils.date2int(date) if isinstance(date, datetime.date) else date
+def update(diary: Diary):
     return sqlutils.update("UPDATE diary SET content=?, weather=?, location=? WHERE id=?",
-                           (content, weather, location, _id))
+                           (*diary.params(), diary.id))
 
 
-def add_or_update(date: datetime.date | int, content, weather='', location=''):
-    if get_by_date(date):
-        return update(date, content, weather, location)
-    return add(date, content, weather, location)
+def add_or_update(diary: Diary):
+    if get_by(id=diary.id):
+        return update(diary)
+    return add(diary)
 
 
-def delete(date: datetime.date | int):
-    _id = utils.date2int(date) if isinstance(date, datetime.date) else date
-    return sqlutils.delete("DELETE FROM diary where id=?", (_id,))
+def delete(**kwargs):
+    sql_cmd = "DELETE FROM diary"
+    args = []
+    if len(kwargs) > 0:
+        sql_cmd += " WHERE "
+        for key in kwargs:
+            sql_cmd += "`%s`=? AND " % key
+            args.append(kwargs[key])
+        sql_cmd = sql_cmd[:-5]
+    return sqlutils.delete(sql_cmd, args)
 
 
-def update_diaries(diary_dict):
+def update_diary(diary: Diary):
+    if diary.is_empty():
+        return delete(id=diary.id)
+    return add_or_update(diary)
+
+
+def update_diaries(diary_dict: dict[int, Diary]):
     res = True
-    for _id in diary_dict:
-        if not diary_dict[_id][0] and not diary_dict[_id][1] and not diary_dict[_id][2]:
-            res &= delete(_id)
-        else:
-            res &= add_or_update(_id, diary_dict[_id][0], diary_dict[_id][1], diary_dict[_id][2])
+    for diary in diary_dict.values():
+        res &= update_diary(diary)
     return res
-
-
-def update_diary(date: datetime.date | int, diary: list):
-    if not diary[0] and not diary[1] and not diary[2]:
-        return delete(date)
-    return add_or_update(date, diary[0], diary[1], diary[2])
 
 
 def exp(file):
@@ -80,7 +110,7 @@ def exp(file):
     ws = wb.active
     ws.append(("Date", "Content", "Weather", "Location"))
     for diary in diaries:
-        ws.append(list(diary))
+        ws.append([diary.id, *diary.params()])
     wb.save(file)
 
 
@@ -91,8 +121,8 @@ def imp(file):
         wb = load_workbook(file)
         ws = wb.active
         for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-            diary = [cell.value for cell in row]
-            diary_dict[diary[0]] = diary[1:4]
+            diary = Diary(*(cell.value for cell in row))
+            diary_dict[diary.id] = diary
         return update_diaries(diary_dict)
     except Exception as e:
         print(e.args)

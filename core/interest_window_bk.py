@@ -17,7 +17,6 @@ class InterestWindow(Ui_Interest, BaseWindow):
             (self.le_filter.editingFinished, self.filter_changed),
             (self.tw_interest.itemSelectionChanged, self.interest_sel_changed),
             (self.cb_sort.currentIndexChanged, self.sort_sel_changed),
-            (self.tw_interest.cellChanged, self.interest_edited),
         )
         self.init()
         self.connect_all()
@@ -41,6 +40,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self.tw_interest.setColumnWidth(col, 80)
         self.tw_interest.setColumnWidth(2, 360)
         self.tw_interest.hideColumn(0)
+        self.tw_interest.setTextElideMode(Qt.TextElideMode.ElideNone)
         self.set_i18n()
         self.update_table_interest()
 
@@ -124,7 +124,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.filter = filter_new
         self.update_table_interest()
 
-    def interest_edited(self, row, col):
+    def interest_edited_ori(self, row, col):
         self.disconnect_all()
         tw = self.tw_interest
         interest = self.interest
@@ -153,12 +153,40 @@ class InterestWindow(Ui_Interest, BaseWindow):
             interest_utils.update(interest)
         self.connect_all()
 
-    def sort_edited(self):
-        if not self.interest:
+    def interest_edited(self):
+        tw = self.tw_interest
+        row = tw.currentRow()
+        col = tw.currentColumn()
+        widget = self.sender()
+        if col == 3:
+            self.interest.sort = widget.currentIndex() + 1
+            self.set_table_value(self.tw_interest, row, 3, self.sorts[self.interest.sort])
+        elif col == 2:
+            self.interest.name = widget.text()
+            self.set_table_value(self.tw_interest, row, 2, self.interest.name)
+        elif col == 4:
+            self.interest.progress = widget.text()
+            self.set_table_value(self.tw_interest, row, 4, self.interest.progress)
+        elif col == 5:
+            self.interest.publish = widget.value()
+            self.set_table_value(self.tw_interest, row, 5, self.interest.publish)
+        elif col == 6:
+            self.interest.date = widget.value()
+            self.set_table_value(self.tw_interest, row, 6, self.interest.date)
+        elif col == 7:
+            self.interest.score_db = widget.value()
+            self.set_table_value(self.tw_interest, row, 7, self.interest.score_db)
+        elif col == 8:
+            self.interest.score_imdb = widget.value()
+            self.set_table_value(self.tw_interest, row, 8, self.interest.score_imdb)
+        elif col == 9:
+            self.interest.score = widget.value()
+            self.set_table_value(self.tw_interest, row, 9, self.interest.score)
+        elif col == 10:
+            self.interest.remark = widget.text()
+            self.set_table_value(self.tw_interest, row, 10, self.interest.remark)
+        else:
             return
-        cb = self.sender()
-        self.interest.sort = cb.currentIndex() + 1
-        self.set_table_value(self.tw_interest, self.row_interest, 3, self.sorts[self.interest.sort])
         if self.multi_thread:
             self.start_task(interest_utils.update, self.interest)
         else:
@@ -174,21 +202,57 @@ class InterestWindow(Ui_Interest, BaseWindow):
             interest = self.interests[row]
             self.set_table_value(tw, row, 0, interest.id)
             self.set_table_value(tw, row, 1, interest.added, False, center=True)
+
+            le = self.get_table_line(tw, row, 2)
+            le.setText(interest.name)
+            self.reconnect(le.focusOut, self.interest_edited)
             self.set_table_value(tw, row, 2, interest.name)
+
             cb_sort = self.get_table_combo(tw, row, 3)
             cb_sort.clear()
             cb_sort.addItems(self.sorts[1:])
-            cb_sort.setCurrentIndex(interest.sort - 1 if interest.sort > 0 else len(self.sorts) - 2)
-            self.reconnect(cb_sort.currentIndexChanged, self.sort_edited)
+            if interest.sort > 0:
+                cb_sort.setCurrentIndex(interest.sort - 1)
+            else:
+                cb_sort.setCurrentIndex(len(self.sorts) - 2)
+            self.reconnect(cb_sort.currentIndexChanged, self.interest_edited)
             self.set_table_value(tw, row, 3, self.sorts[interest.sort], center=True)
+
+            le = self.get_table_line(tw, row, 4)
+            le.setText(interest.progress)
+            self.reconnect(le.focusOut, self.interest_edited)
             self.set_table_value(tw, row, 4, interest.progress, center=True)
+
+            sb = self.get_table_sb(tw, row, 5)
+            sb.setValue(interest.publish)
+            self.reconnect(sb.valueChanged, self.interest_edited)
             self.set_table_value(tw, row, 5, interest.publish, center=True)
+
+            sb = self.get_table_sb(tw, row, 6)
+            sb.setValue(interest.date)
+            self.reconnect(sb.valueChanged, self.interest_edited)
             self.set_table_value(tw, row, 6, interest.date, center=True)
+
+            dsb = self.get_table_sb(tw, row, 7)
+            dsb.setValue(interest.score_db)
+            self.reconnect(dsb.valueChanged, self.interest_edited)
             self.set_table_value(tw, row, 7, float(interest.score_db), center=True)
+
+            dsb = self.get_table_sb(tw, row, 8)
+            dsb.setValue(interest.score_imdb)
+            self.reconnect(dsb.valueChanged, self.interest_edited)
             self.set_table_value(tw, row, 8, float(interest.score_imdb), center=True)
+
+            dsb = self.get_table_sb(tw, row, 9)
+            dsb.setValue(interest.score)
+            self.reconnect(dsb.valueChanged, self.interest_edited)
             self.set_table_value(tw, row, 9, float(interest.score), center=True)
+
+            le = self.get_table_line(tw, row, 10)
+            le.setText(interest.remark)
+            self.reconnect(le.focusOut, self.interest_edited)
             self.set_table_value(tw, row, 10, interest.remark)
-            # self.set_table_value(tw, row, 11, interest.updated, False)
+
             if self.filter and self.filter.upper() not in str(interest).upper():
                 tw.setRowHidden(row, True)
             else:

@@ -15,16 +15,16 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QHBoxLayout,
-    QHeaderView, QLineEdit, QMainWindow, QPushButton,
-    QSizePolicy, QSpacerItem, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
+    QHBoxLayout, QHeaderView, QLineEdit, QMainWindow,
+    QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 
 class Ui_Interest(object):
     def setupUi(self, Interest):
         if not Interest.objectName():
             Interest.setObjectName(u"Interest")
-        Interest.resize(1000, 600)
+        Interest.resize(1280, 720)
         self.centralwidget = QWidget(Interest)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -45,8 +45,14 @@ class Ui_Interest(object):
 
         self.tw_interest = QTableWidget(self.centralwidget)
         self.tw_interest.setObjectName(u"tw_interest")
+        self.tw_interest.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.tw_interest.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tw_interest.setTextElideMode(Qt.ElideNone)
+        self.tw_interest.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.tw_interest.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.tw_interest.setSortingEnabled(True)
-        self.tw_interest.horizontalHeader().setDefaultSectionSize(80)
+        self.tw_interest.horizontalHeader().setCascadingSectionResizes(True)
+        self.tw_interest.horizontalHeader().setDefaultSectionSize(60)
         self.tw_interest.horizontalHeader().setProperty("showSortIndicator", False)
         self.tw_interest.horizontalHeader().setStretchLastSection(True)
         self.tw_interest.verticalHeader().setVisible(True)

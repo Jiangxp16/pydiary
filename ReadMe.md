@@ -50,8 +50,10 @@ Build config.ini in program path to replace default configuration, usable config
 db_name=diary.db
 first_day_of_week=7
 language=zh
+multi_thread=1
 
 [style]
 font=Times New Roman,Kaiti
 font_size=18
+logo=style/logo.png
 ```
