@@ -1,7 +1,7 @@
 from core.interest import Ui_Interest
 
 from core import interest_utils, utils
-from core.qt_base import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QPixmap
+from core.qt_base import BaseWindow, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QPixmap, QIcon
 
 
 class InterestWindow(Ui_Interest, BaseWindow):
@@ -23,8 +23,11 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.connect_all()
 
     def init(self):
-        self.logo_path = utils.get_path(utils.load_config("style", "logo"))
-        self.setWindowIcon(QPixmap(self.logo_path))
+        self.setWindowIcon(QPixmap(utils.get_path(utils.load_config("style", "logo"))))
+        self.pb_imp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_imp"))))
+        self.pb_exp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exp"))))
+        self.pb_add.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_add"))))
+        self.pb_del.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_del"))))
         self.sorts = ["All", "Movie", "TV", "Comic", "Game", "Book", "Music", "Others"]
         self.sort = 0
         self.filter = ''
@@ -55,11 +58,18 @@ class InterestWindow(Ui_Interest, BaseWindow):
                                                         "发布", "最后日期", "评分\r\n(db)",
                                                         "评分\r\n(imdb)", "评分", "备注"])
             self.le_filter.setPlaceholderText("搜索...")
-            self.pb_exp.setText("导出")
-            self.pb_imp.setText("导入")
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_D:
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            if event.key() == Qt.Key.Key_D:
+                return self.btn_del()
+            if event.key() == Qt.Key.Key_N:
+                return self.btn_add()
+            if event.key() == Qt.Key.Key_I:
+                return self.btn_imp()
+            if event.key() == Qt.Key.Key_E:
+                return self.btn_exp()
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier and event.key() == Qt.Key.Key_D:
             ok_pressed = QMessageBox.question(self, 'WARNING', 'Delete information in current page?', QMessageBox.Yes | QMessageBox.No,
                                               QMessageBox.No)
             if ok_pressed == QMessageBox.No:
@@ -95,7 +105,8 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self.update_table_interest()
 
     def btn_exp(self):
-        file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "", filter="Excel File (*.xlsx);; All Files (*);")
+        file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "interest.xlsx",
+                                              filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             interest_utils.exp(file, self.sort)
 
@@ -106,11 +117,14 @@ class InterestWindow(Ui_Interest, BaseWindow):
 
     def interest_sel_changed(self):
         self.row_interest = self.tw_interest.currentRow()
-        id_row = self.get_table_value(self.tw_interest, self.row_interest, 0)
-        for i in range(len(self.interests)):
-            if self.interests[i].id == id_row:
-                self.interest = self.interests[i]
-                break
+        if self.row_interest < 0:
+            self.interest = None
+        else:
+            id_row = self.get_table_value(self.tw_interest, self.row_interest, 0)
+            for i in range(len(self.interests)):
+                if self.interests[i].id == id_row:
+                    self.interest = self.interests[i]
+                    break
 
     def filter_edited(self):
         filter_new = self.le_filter.text()
@@ -120,7 +134,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         self.update_table_interest()
 
     def interest_edited(self, row, col):
-        if col == 3:
+        if col == 3 or self.interest is None:
             return
         self.disconnect_all()
         tw = self.tw_interest
@@ -169,6 +183,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
                     self.row_interest = row
                     break
         elif self.row_interest > -1 and tw.rowCount() > 0:
+            self.row_interest = min(self.row_interest, tw.rowCount() - 1)
             self.tw_interest.selectRow(self.row_interest)
             self.interest_sel_changed()
         self.connect_all()

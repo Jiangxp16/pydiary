@@ -1,7 +1,7 @@
 # **Diary Application**
 A pure application for diary writing based on pyside6.
 All data save to "diary.db" in program path and could export to excel file.
-(Press Ctrl-I for fun)
+(Press Ctrl-I/Ctrl-B for fun)
 
 <img src="diary.png" width="500" height="300">
 

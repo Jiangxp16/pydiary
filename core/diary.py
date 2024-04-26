@@ -72,32 +72,38 @@ class Ui_Diary(object):
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer_2)
 
+        self.pb_save = QPushButton(self.centralwidget)
+        self.pb_save.setObjectName(u"pb_save")
+        self.pb_save.setMinimumSize(QSize(40, 0))
+        self.pb_save.setMaximumSize(QSize(40, 16777215))
+        self.pb_save.setStyleSheet(u"")
+        self.pb_save.setFlat(False)
+
+        self.horizontalLayout_4.addWidget(self.pb_save)
+
         self.cb_autosave = QCheckBox(self.centralwidget)
         self.cb_autosave.setObjectName(u"cb_autosave")
         self.cb_autosave.setChecked(True)
 
         self.horizontalLayout_4.addWidget(self.cb_autosave)
 
-        self.pb_save = QPushButton(self.centralwidget)
-        self.pb_save.setObjectName(u"pb_save")
-        self.pb_save.setStyleSheet(u"")
-        self.pb_save.setFlat(False)
-
-        self.horizontalLayout_4.addWidget(self.pb_save)
-
         self.horizontalSpacer_3 = QSpacerItem(10, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer_3)
 
-        self.pb_export = QPushButton(self.centralwidget)
-        self.pb_export.setObjectName(u"pb_export")
+        self.pb_imp = QPushButton(self.centralwidget)
+        self.pb_imp.setObjectName(u"pb_imp")
+        self.pb_imp.setMinimumSize(QSize(40, 0))
+        self.pb_imp.setMaximumSize(QSize(40, 16777215))
 
-        self.horizontalLayout_4.addWidget(self.pb_export)
+        self.horizontalLayout_4.addWidget(self.pb_imp)
 
-        self.pb_import = QPushButton(self.centralwidget)
-        self.pb_import.setObjectName(u"pb_import")
+        self.pb_exp = QPushButton(self.centralwidget)
+        self.pb_exp.setObjectName(u"pb_exp")
+        self.pb_exp.setMinimumSize(QSize(40, 0))
+        self.pb_exp.setMaximumSize(QSize(40, 16777215))
 
-        self.horizontalLayout_4.addWidget(self.pb_import)
+        self.horizontalLayout_4.addWidget(self.pb_exp)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_4)
@@ -151,18 +157,17 @@ class Ui_Diary(object):
 
         self.pb_monthly = QPushButton(self.centralwidget)
         self.pb_monthly.setObjectName(u"pb_monthly")
+        self.pb_monthly.setMinimumSize(QSize(40, 0))
+        self.pb_monthly.setMaximumSize(QSize(40, 16777215))
         self.pb_monthly.setStyleSheet(u"")
         self.pb_monthly.setFlat(False)
 
         self.horizontalLayout_2.addWidget(self.pb_monthly)
 
-        self.label_2 = QLabel(self.centralwidget)
-        self.label_2.setObjectName(u"label_2")
-
-        self.horizontalLayout_2.addWidget(self.label_2)
-
         self.pb_daily = QPushButton(self.centralwidget)
         self.pb_daily.setObjectName(u"pb_daily")
+        self.pb_daily.setMinimumSize(QSize(40, 0))
+        self.pb_daily.setMaximumSize(QSize(40, 16777215))
         self.pb_daily.setStyleSheet(u"")
         self.pb_daily.setFlat(False)
 
@@ -201,14 +206,28 @@ class Ui_Diary(object):
         self.actionEXPORT.setText(QCoreApplication.translate("Diary", u"EXPORT", None))
         self.actionIMPORT.setText(QCoreApplication.translate("Diary", u"IMPORT", None))
         self.lb_lunar.setText("")
+#if QT_CONFIG(tooltip)
+        self.pb_save.setToolTip(QCoreApplication.translate("Diary", u"Ctrl+S: SAVE", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_save.setText("")
         self.cb_autosave.setText(QCoreApplication.translate("Diary", u"AUTO", None))
-        self.pb_save.setText(QCoreApplication.translate("Diary", u"SAVE", None))
-        self.pb_export.setText(QCoreApplication.translate("Diary", u"EXP", None))
-        self.pb_import.setText(QCoreApplication.translate("Diary", u"IMP", None))
+#if QT_CONFIG(tooltip)
+        self.pb_imp.setToolTip(QCoreApplication.translate("Diary", u"IMPORT", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_imp.setText("")
+#if QT_CONFIG(tooltip)
+        self.pb_exp.setToolTip(QCoreApplication.translate("Diary", u"EXPORT", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_exp.setText("")
         self.lb_weather.setText(QCoreApplication.translate("Diary", u"whether:", None))
         self.lb_location.setText(QCoreApplication.translate("Diary", u"location:", None))
-        self.pb_monthly.setText(QCoreApplication.translate("Diary", u"MONTH", None))
-        self.label_2.setText(QCoreApplication.translate("Diary", u"/", None))
-        self.pb_daily.setText(QCoreApplication.translate("Diary", u"DAILY", None))
+#if QT_CONFIG(tooltip)
+        self.pb_monthly.setToolTip(QCoreApplication.translate("Diary", u"Ctrl+M: Month View", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_monthly.setText("")
+#if QT_CONFIG(tooltip)
+        self.pb_daily.setToolTip(QCoreApplication.translate("Diary", u"Ctrl+D: Daily View", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_daily.setText("")
     # retranslateUi
 

@@ -2,9 +2,8 @@ import sys
 
 from core import diary_utils, utils, sqlutils
 from core.diary import Ui_Diary
-from core.interest_window import InterestWindow
 from core.qt_base import (BaseWindow, TextEdit, QKeyEvent, QPixmap, QIcon, QAction, QDate, Qt, QEvent,
-                          QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
+                          QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView, QStyle)
 
 
 class DiaryWindow(Ui_Diary, BaseWindow):
@@ -24,8 +23,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             (self.le_location.editingFinished, self.diary_edited),
             (self.le_weather.editingFinished, self.diary_edited),
             (self.pb_save.clicked, self.btn_save),
-            (self.pb_export.clicked, self.btn_export),
-            (self.pb_import.clicked, self.btn_import),
+            (self.pb_exp.clicked, self.btn_export),
+            (self.pb_imp.clicked, self.btn_import),
             (self.cb_autosave.clicked, self.cb_autosave_changed),
         )
         self.init()
@@ -33,10 +32,16 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def init(self):
         self.logo_path = utils.get_path(utils.load_config("style", "logo"))
-        self.setWindowIcon(QPixmap(self.logo_path))
+        self.setWindowIcon(QIcon(self.logo_path))
+        self.pb_imp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_imp"))))
+        self.pb_exp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exp"))))
+        self.pb_save.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_save"))))
+        self.pb_monthly.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_month"))))
+        self.pb_daily.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_day"))))
         self.WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         self.set_i18n()
         self.window_interest = None
+        self.window_bill = None
         self.pb_save.setEnabled(False)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -64,9 +69,6 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.WEEK_DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
             self.pb_daily.setText("日视图")
             self.pb_monthly.setText("月视图")
-            self.pb_save.setText("保存")
-            self.pb_export.setText("导出")
-            self.pb_import.setText("导入")
             self.cb_autosave.setText("自动")
             self.lb_location.setText("地点")
             self.lb_weather.setText("天气")
@@ -77,13 +79,17 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         tray_menu = QMenu(self)
         action_show = QAction("Show/Hide", tray_menu)
         action_interest = QAction("Interest", tray_menu)
+        action_bill = QAction("Bill", tray_menu)
         action_exit = QAction("Exit", tray_menu)
         action_show.triggered.connect(self.show_or_hide_window)
         action_exit.triggered.connect(self.close_window)
         action_interest.triggered.connect(self.open_interest_window)
+        action_bill.triggered.connect(self.open_bill_window)
         tray_menu.addAction(action_show)
         tray_menu.addSeparator()
         tray_menu.addAction(action_interest)
+        tray_menu.addSeparator()
+        tray_menu.addAction(action_bill)
         tray_menu.addSeparator()
         tray_menu.addAction(action_exit)
         self.tray.setContextMenu(tray_menu)
@@ -270,6 +276,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def open_interest_window(self):
         if self.window_interest is None:
+            from core.interest_window import InterestWindow
             self.window_interest = InterestWindow()
         if self.window_interest.isHidden():
             if self.window_interest.isMaximized():
@@ -282,11 +289,33 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         else:
             self.window_interest.hide()
 
+    def open_bill_window(self):
+        if self.window_bill is None:
+            from core.bill_window import BillWindow
+            self.window_bill = BillWindow()
+        if self.window_bill.isHidden():
+            if self.window_bill.isMaximized():
+                self.window_bill.showMaximized()
+            elif self.window_bill.isMinimized():
+                self.window_bill.showNormal()
+            else:
+                self.window_bill.show()
+            self.window_bill.activateWindow()
+        else:
+            self.window_bill.hide()
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_S:
-            self.btn_save()
-        elif event.modifiers() == Qt.KeyboardModifier.ControlModifier and event.key() == Qt.Key.Key_I:
-            self.open_interest_window()
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            if event.key() == Qt.Key.Key_S:
+                self.btn_save()
+            elif event.key() == Qt.Key.Key_I:
+                self.open_interest_window()
+            elif event.key() == Qt.Key.Key_B:
+                self.open_bill_window()
+            elif event.key() == Qt.Key.Key_M:
+                self.set_monthly_view()
+            elif event.key() == Qt.Key.Key_D:
+                self.set_daily_view()
         else:
             return super().keyPressEvent(event)
 

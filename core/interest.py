@@ -71,19 +71,19 @@ class Ui_Interest(object):
 
         self.horizontalLayout.addItem(self.hs_operate)
 
-        self.pb_exp = QPushButton(self.centralwidget)
-        self.pb_exp.setObjectName(u"pb_exp")
-        self.pb_exp.setMinimumSize(QSize(0, 0))
-        self.pb_exp.setMaximumSize(QSize(50, 16777215))
-
-        self.horizontalLayout.addWidget(self.pb_exp)
-
         self.pb_imp = QPushButton(self.centralwidget)
         self.pb_imp.setObjectName(u"pb_imp")
-        self.pb_imp.setMinimumSize(QSize(0, 0))
-        self.pb_imp.setMaximumSize(QSize(50, 16777215))
+        self.pb_imp.setMinimumSize(QSize(40, 0))
+        self.pb_imp.setMaximumSize(QSize(40, 16777215))
 
         self.horizontalLayout.addWidget(self.pb_imp)
+
+        self.pb_exp = QPushButton(self.centralwidget)
+        self.pb_exp.setObjectName(u"pb_exp")
+        self.pb_exp.setMinimumSize(QSize(40, 0))
+        self.pb_exp.setMaximumSize(QSize(40, 16777215))
+
+        self.horizontalLayout.addWidget(self.pb_exp)
 
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
@@ -94,15 +94,15 @@ class Ui_Interest(object):
 
         self.pb_add = QPushButton(self.centralwidget)
         self.pb_add.setObjectName(u"pb_add")
-        self.pb_add.setMinimumSize(QSize(0, 0))
-        self.pb_add.setMaximumSize(QSize(30, 16777215))
+        self.pb_add.setMinimumSize(QSize(40, 0))
+        self.pb_add.setMaximumSize(QSize(40, 16777215))
 
         self.horizontalLayout.addWidget(self.pb_add)
 
         self.pb_del = QPushButton(self.centralwidget)
         self.pb_del.setObjectName(u"pb_del")
-        self.pb_del.setMinimumSize(QSize(0, 0))
-        self.pb_del.setMaximumSize(QSize(30, 16777215))
+        self.pb_del.setMinimumSize(QSize(40, 0))
+        self.pb_del.setMaximumSize(QSize(40, 16777215))
 
         self.horizontalLayout.addWidget(self.pb_del)
 
@@ -119,9 +119,21 @@ class Ui_Interest(object):
     def retranslateUi(self, Interest):
         Interest.setWindowTitle(QCoreApplication.translate("Interest", u"Interest", None))
         self.le_filter.setPlaceholderText(QCoreApplication.translate("Interest", u"Search here.", None))
-        self.pb_exp.setText(QCoreApplication.translate("Interest", u"EXP", None))
-        self.pb_imp.setText(QCoreApplication.translate("Interest", u"IMP", None))
-        self.pb_add.setText(QCoreApplication.translate("Interest", u"+", None))
-        self.pb_del.setText(QCoreApplication.translate("Interest", u"-", None))
+#if QT_CONFIG(tooltip)
+        self.pb_imp.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+I: IMPORT", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_imp.setText("")
+#if QT_CONFIG(tooltip)
+        self.pb_exp.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+E: EXPORT", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_exp.setText("")
+#if QT_CONFIG(tooltip)
+        self.pb_add.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+N", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_add.setText("")
+#if QT_CONFIG(tooltip)
+        self.pb_del.setToolTip(QCoreApplication.translate("Interest", u"Ctrl+D", None))
+#endif // QT_CONFIG(tooltip)
+        self.pb_del.setText("")
     # retranslateUi
 
