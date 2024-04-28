@@ -2,7 +2,7 @@ import datetime
 
 from core import bill_utils, utils
 from core.bill import Ui_Bill
-from core.qt_base import BaseWindow, QEvent, QFileDialog, Qt, QPixmap, QIcon, QKeyEvent
+from core.qt_base import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent
 
 
 class BillWindow(Ui_Bill, BaseWindow):
@@ -25,7 +25,7 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.connect_all()
 
     def init(self):
-        self.setWindowIcon(QPixmap(utils.get_path(utils.load_config("style", "logo"))))
+        self.setWindowIcon(QIcon(utils.get_path(utils.load_config("style", "icon_bill"))))
         self.pb_imp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_imp"))))
         self.pb_exp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exp"))))
         self.pb_add.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_add"))))
@@ -160,7 +160,6 @@ class BillWindow(Ui_Bill, BaseWindow):
     def update_table_bill(self):
         self.disconnect_all()
         tw = self.tw_bill
-        tw.clearContents()
         tw.setRowCount(len(self.bills))
         tw.setSortingEnabled(False)
         for row in range(tw.rowCount()):

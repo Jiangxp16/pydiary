@@ -18,9 +18,11 @@ CREATE TABLE IF NOT EXISTS interest (
     remark TEXT NOT NULL
 );
 """
-# sql_create_index = "CREATE INDEX IF NOT EXISTS index_ns ON interest (sort);"
-# CREATE INDEX IF NOT EXISTS index_update ON interest (updated);
 sqlutils.cur.execute(sql_create)
+
+# sql_create_index = "CREATE INDEX IF NOT EXISTS index_sort ON interest (sort);"
+# sqlutils.cur.execute(sql_create_index)
+# sqlutils.conn.commit()
 
 sql_update = "UPDATE interest SET `sort`=7 WHERE `sort`=0"
 sqlutils.cur.execute(sql_update)
@@ -118,6 +120,9 @@ def get_list_by(**kwargs):
 
 def update(interest: Interest):
     interest.updated = utils.date2int(datetime.date.today())
+    interest.name = interest.name.strip()
+    interest.progress = interest.progress.strip()
+    interest.remark = interest.remark.strip()
     return sqlutils.update("UPDATE interest SET `added`=?, `updated`=?, `name`=?, `sort`=?, `progress`=?, `publish`=?, `date`=?,\
                            `score_db`=?, `score_imdb`=?, `score`=?, `remark`=? WHERE `id`=?", (*interest.params(), interest.id))
 

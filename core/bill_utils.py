@@ -12,8 +12,11 @@ CREATE TABLE IF NOT EXISTS bill (
     item TEXT NOT NULL DEFAULT ""
 );
 """
-
 sqlutils.cur.execute(sql_create)
+
+# sql_create_index = "CREATE INDEX IF NOT EXISTS index_date ON bill (date);"
+# sqlutils.cur.execute(sql_create_index)
+# sqlutils.conn.commit()
 
 
 class Bill:
@@ -73,6 +76,7 @@ def get_between_dates(date1=0, date2=99999999):
 
 
 def update(bill: Bill):
+    bill.item = bill.item.strip()
     sql_cmd = "UPDATE bill SET `date`=?, `inout`=?, `type`=?, `amount`=?, `item`=? WHERE `id`=?"
     return sqlutils.update(sql_cmd, (*bill.params(), bill.id))
 

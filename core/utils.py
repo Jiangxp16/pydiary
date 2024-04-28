@@ -70,7 +70,12 @@ def load_config(seg, key=None):
             "multi_thread": 1,
         },
         "style": {
+            "font": "Times New Roman,Kaiti",
+            "font_size": 18,
             "logo": "style/logo.png",
+            "icon_interest": "style/interest.png",
+            "icon_bill": "style/bill.png",
+            "icon_exit": "style/exit.png",
             "icon_imp": "style/imp.png",
             "icon_exp": "style/exp.png",
             "icon_save": "style/save.png",
@@ -78,8 +83,7 @@ def load_config(seg, key=None):
             "icon_del": "style/del.png",
             "icon_month": "style/month.png",
             "icon_day": "style/day.png",
-            "font": "Times New Roman,Kaiti",
-            "font_size": 18,
+            "qss": None,
         }
     }
     if os.path.isfile(CONFIG_FILE):
