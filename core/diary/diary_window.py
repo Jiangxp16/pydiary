@@ -1,9 +1,10 @@
 import sys
 
-from core import diary_utils, utils, sqlutils
-from core.diary import Ui_Diary
-from core.qt_base import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
-                          QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
+from core.diary import diary_utils
+from core.diary.diary import Ui_Diary
+from core.util.qtutils import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
+                               QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
+from core.util import utils
 
 
 class DiaryWindow(Ui_Diary, BaseWindow):
@@ -43,6 +44,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.set_i18n()
         self.window_interest = None
         self.window_bill = None
+        self.window_note = None
         self.pb_save.setEnabled(False)
         self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -65,7 +67,6 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.language = utils.load_config("global", "language")
         if self.language == "zh":
             self.calendar.setLocale(self.locale())
-            self.setWindowTitle("日记")
             self.WEEK_DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
             self.pb_daily.setText("日视图")
             self.pb_monthly.setText("月视图")
@@ -75,6 +76,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.action_diary.setText("日记")
             self.action_interest.setText("兴趣")
             self.action_bill.setText("账单")
+            self.action_note.setText("笔记")
             self.action_exit.setText("退出")
 
     def add_tray(self):
@@ -88,21 +90,26 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.action_diary = QAction("&Diary", tray_menu)
         self.action_interest = QAction("&Interest", tray_menu)
         self.action_bill = QAction("&Bill", tray_menu)
+        self.action_note = QAction("&Note", tray_menu)
         self.action_exit = QAction("&Exit", tray_menu)
 
         self.action_diary.setIcon(QIcon(self.logo_path))
         self.action_interest.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_interest"))))
         self.action_bill.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_bill"))))
+        self.action_note.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_note"))))
         self.action_exit.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exit"))))
 
         self.action_diary.triggered.connect(self.show_or_hide_window)
         self.action_interest.triggered.connect(self.open_interest_window)
         self.action_bill.triggered.connect(self.open_bill_window)
+        self.action_note.triggered.connect(self.open_note_window)
         self.action_exit.triggered.connect(self.close_window)
 
         tray_menu.addAction(self.action_diary)
         tray_menu.addAction(self.action_interest)
         tray_menu.addAction(self.action_bill)
+        tray_menu.addAction(self.action_note)
+        tray_menu.addSeparator()
         tray_menu.addAction(self.action_exit)
 
         self.tray.setContextMenu(tray_menu)
@@ -289,7 +296,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def open_interest_window(self):
         if self.window_interest is None:
-            from core.interest_window import InterestWindow
+            from core.interest.interest_window import InterestWindow
             self.window_interest = InterestWindow()
         if self.window_interest.isHidden():
             if self.window_interest.isMaximized():
@@ -304,7 +311,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def open_bill_window(self):
         if self.window_bill is None:
-            from core.bill_window import BillWindow
+            from core.bill.bill_window import BillWindow
             self.window_bill = BillWindow()
         if self.window_bill.isHidden():
             if self.window_bill.isMaximized():
@@ -317,6 +324,21 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         else:
             self.window_bill.hide()
 
+    def open_note_window(self):
+        if self.window_note is None:
+            from core.note.note_window import NoteWindow
+            self.window_note = NoteWindow()
+        if self.window_note.isHidden():
+            if self.window_note.isMaximized():
+                self.window_note.showMaximized()
+            elif self.window_note.isMinimized():
+                self.window_note.showNormal()
+            else:
+                self.window_note.show()
+            self.window_note.activateWindow()
+        else:
+            self.window_note.hide()
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if event.key() == Qt.Key.Key_S:
@@ -325,6 +347,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 self.open_interest_window()
             elif event.key() == Qt.Key.Key_B:
                 self.open_bill_window()
+            elif event.key() == Qt.Key.Key_N:
+                self.open_note_window()
             elif event.key() == Qt.Key.Key_M:
                 self.set_monthly_view()
             elif event.key() == Qt.Key.Key_D:
@@ -357,5 +381,4 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.hide()
 
     def close_window(self):
-        sqlutils.close_connection()
         sys.exit(0)

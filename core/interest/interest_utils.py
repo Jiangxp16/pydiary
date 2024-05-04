@@ -1,6 +1,7 @@
 import datetime
 
-from core import sqlutils, utils
+from core.util import sqlutils
+from core.util import utils
 
 sql_create = """
 CREATE TABLE IF NOT EXISTS interest (
@@ -75,8 +76,10 @@ class Interest:
 
 
 def get_last():
-    rs = sqlutils.select_one("SELECT * FROM interest where id = last_insert_rowid()")
-    return Interest(*rs)
+    rs = sqlutils.get_last("interest")
+    if rs is not None:
+        return Interest(*rs)
+    return None
 
 
 def add(interest=None, **kwargs):

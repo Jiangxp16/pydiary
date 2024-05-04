@@ -32,14 +32,11 @@ class Ui_Bill(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.hs_sort = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_2.addItem(self.hs_sort)
-
         self.sb_start = QSpinBox(self.centralwidget)
         self.sb_start.setObjectName(u"sb_start")
         self.sb_start.setAlignment(Qt.AlignCenter)
         self.sb_start.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.sb_start.setKeyboardTracking(False)
         self.sb_start.setMaximum(99999999)
         self.sb_start.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
 
@@ -54,10 +51,66 @@ class Ui_Bill(object):
         self.sb_end.setObjectName(u"sb_end")
         self.sb_end.setAlignment(Qt.AlignCenter)
         self.sb_end.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.sb_end.setKeyboardTracking(False)
         self.sb_end.setMaximum(99999999)
         self.sb_end.setStepType(QAbstractSpinBox.AdaptiveDecimalStepType)
 
         self.horizontalLayout_2.addWidget(self.sb_end)
+
+        self.hs_sort = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.hs_sort)
+
+        self.lb_total = QLabel(self.centralwidget)
+        self.lb_total.setObjectName(u"lb_total")
+        font = QFont()
+        font.setFamilies([u"Segoe UI"])
+        self.lb_total.setFont(font)
+
+        self.horizontalLayout_2.addWidget(self.lb_total)
+
+        self.dsb_total = QDoubleSpinBox(self.centralwidget)
+        self.dsb_total.setObjectName(u"dsb_total")
+        self.dsb_total.setMaximumSize(QSize(16777215, 16777215))
+        self.dsb_total.setAlignment(Qt.AlignCenter)
+        self.dsb_total.setReadOnly(True)
+        self.dsb_total.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.dsb_total.setMinimum(-99999999.000000000000000)
+        self.dsb_total.setMaximum(99999999.000000000000000)
+
+        self.horizontalLayout_2.addWidget(self.dsb_total)
+
+        self.lb_in = QLabel(self.centralwidget)
+        self.lb_in.setObjectName(u"lb_in")
+
+        self.horizontalLayout_2.addWidget(self.lb_in)
+
+        self.dsb_in = QDoubleSpinBox(self.centralwidget)
+        self.dsb_in.setObjectName(u"dsb_in")
+        self.dsb_in.setMaximumSize(QSize(16777215, 16777215))
+        self.dsb_in.setAlignment(Qt.AlignCenter)
+        self.dsb_in.setReadOnly(True)
+        self.dsb_in.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.dsb_in.setMinimum(-99999999.000000000000000)
+        self.dsb_in.setMaximum(99999999.000000000000000)
+
+        self.horizontalLayout_2.addWidget(self.dsb_in)
+
+        self.lb_out = QLabel(self.centralwidget)
+        self.lb_out.setObjectName(u"lb_out")
+
+        self.horizontalLayout_2.addWidget(self.lb_out)
+
+        self.dsb_out = QDoubleSpinBox(self.centralwidget)
+        self.dsb_out.setObjectName(u"dsb_out")
+        self.dsb_out.setMaximumSize(QSize(16777215, 16777215))
+        self.dsb_out.setAlignment(Qt.AlignCenter)
+        self.dsb_out.setReadOnly(True)
+        self.dsb_out.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.dsb_out.setMinimum(-99999999.000000000000000)
+        self.dsb_out.setMaximum(99999999.000000000000000)
+
+        self.horizontalLayout_2.addWidget(self.dsb_out)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -80,21 +133,6 @@ class Ui_Bill(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.lb_total = QLabel(self.centralwidget)
-        self.lb_total.setObjectName(u"lb_total")
-
-        self.horizontalLayout.addWidget(self.lb_total)
-
-        self.dsb_total = QDoubleSpinBox(self.centralwidget)
-        self.dsb_total.setObjectName(u"dsb_total")
-        self.dsb_total.setAlignment(Qt.AlignCenter)
-        self.dsb_total.setReadOnly(True)
-        self.dsb_total.setButtonSymbols(QAbstractSpinBox.NoButtons)
-        self.dsb_total.setMinimum(-99999999.000000000000000)
-        self.dsb_total.setMaximum(99999999.000000000000000)
-
-        self.horizontalLayout.addWidget(self.dsb_total)
-
         self.le_filter = QLineEdit(self.centralwidget)
         self.le_filter.setObjectName(u"le_filter")
         self.le_filter.setMaximumSize(QSize(200, 16777215))
@@ -151,9 +189,11 @@ class Ui_Bill(object):
     # setupUi
 
     def retranslateUi(self, Bill):
-        Bill.setWindowTitle(QCoreApplication.translate("Bill", u"Bill", None))
+        Bill.setWindowTitle(QCoreApplication.translate("Bill", u"BILL", None))
         self.label.setText(QCoreApplication.translate("Bill", u"~", None))
-        self.lb_total.setText(QCoreApplication.translate("Bill", u"Total:", None))
+        self.lb_total.setText(QCoreApplication.translate("Bill", u"TOTAL", None))
+        self.lb_in.setText(QCoreApplication.translate("Bill", u"IN", None))
+        self.lb_out.setText(QCoreApplication.translate("Bill", u"OUT", None))
         self.le_filter.setPlaceholderText(QCoreApplication.translate("Bill", u"Search here.", None))
 #if QT_CONFIG(tooltip)
         self.pb_imp.setToolTip(QCoreApplication.translate("Bill", u"Ctrl+I: IMPORT", None))

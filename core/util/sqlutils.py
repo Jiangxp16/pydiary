@@ -1,11 +1,14 @@
+import atexit
 import sqlite3
-from core import utils
+
+from core.util import utils
+
 db_name = utils.load_config("global", "db_name")
-# db_path = utils.get_path(db_name)
 conn = sqlite3.connect(db_name, check_same_thread=False)
 cur = conn.cursor()
 
 
+@atexit.register
 def close_connection():
     try:
         cur.close()
@@ -74,3 +77,8 @@ def delete(sql_cmd, args=()):
         conn.rollback()
         return False
     return True
+
+
+def get_last(table: str):
+    rs = select_one("SELECT * FROM %s WHERE id=last_insert_rowid()" % table)
+    return rs

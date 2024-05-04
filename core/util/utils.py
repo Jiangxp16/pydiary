@@ -70,11 +70,12 @@ def load_config(seg, key=None):
             "multi_thread": 1,
         },
         "style": {
-            "font": "Times New Roman,Kaiti",
+            "font": "Arial,Kaiti",
             "font_size": 18,
             "logo": "style/logo.png",
             "icon_interest": "style/interest.png",
             "icon_bill": "style/bill.png",
+            "icon_note": "style/note.png",
             "icon_exit": "style/exit.png",
             "icon_imp": "style/imp.png",
             "icon_exp": "style/exp.png",

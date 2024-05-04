@@ -1,8 +1,53 @@
-from PySide6.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction, QFont
+from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction, QFont
 from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable
-from PySide6.QtWidgets import QMainWindow, QWidgetAction, QLabel, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle
+from PySide6.QtWidgets import QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle
 
-from core import utils
+from core.util import utils
+
+
+def key_pressed(table: QTableWidget, event: QKeyEvent):
+    if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+        if event.key() == Qt.Key.Key_C:
+            text = ""
+            row = table.currentRow()
+            col = table.currentColumn()
+            item = table.item(row, col)
+            widget = table.cellWidget(row, col)
+            if widget is not None:
+                if isinstance(widget, QComboBox):
+                    text = widget.currentText()
+                elif isinstance(widget, QPlainTextEdit):
+                    text = widget.toPlainText()
+                elif isinstance(widget, QLineEdit):
+                    text = widget.text()
+            elif item is not None:
+                text = item.text()
+            clipboard = QGuiApplication.clipboard()
+            clipboard.setText(text)
+        elif event.key() == Qt.Key.Key_V:
+            clipboard = QGuiApplication.clipboard()
+            text = clipboard.text()
+            row = table.currentRow()
+            col = table.currentColumn()
+            widget = table.cellWidget(row, col)
+            item = table.item(row, col)
+            if widget is not None:
+                if isinstance(widget, QComboBox):
+                    widget.setCurrentText(text)
+                elif isinstance(widget, QPlainTextEdit):
+                    widget.setPlainText(text)
+                elif isinstance(widget, QLineEdit):
+                    widget.setText(text)
+            elif item is not None:
+                value = item.data(Qt.ItemDataRole.DisplayRole)
+                try:
+                    item.setData(Qt.ItemDataRole.DisplayRole, type(value)(text))
+                except Exception:
+                    return
+    return super(QTableWidget, table).keyPressEvent(event)
+
+
+QTableWidget.keyPressEvent = key_pressed
 
 
 class TextEdit(QPlainTextEdit):
