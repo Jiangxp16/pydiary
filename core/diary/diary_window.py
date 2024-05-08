@@ -1,10 +1,12 @@
 import sys
+import time
 
 from core.diary import diary_utils
 from core.diary.diary import Ui_Diary
-from core.util.qtutils import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
+from core.util.qt_utils import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
-from core.util import utils
+from core.util import utils, config_utils
+from core.util.i18n_utils import tr
 
 
 class DiaryWindow(Ui_Diary, BaseWindow):
@@ -32,52 +34,57 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.connect_all()
 
     def init(self):
+        self.time_logined = time.time()
         self.logo_path = utils.get_path(utils.load_config("style", "logo"))
+        self.expired = int(utils.load_config("global", "login_expired"))
         self.setWindowIcon(QIcon(self.logo_path))
-        self.pb_imp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_imp"))))
-        self.pb_exp.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exp"))))
-        self.pb_save.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_save"))))
-        self.pb_monthly.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_month"))))
-        self.pb_daily.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_day"))))
-        self.WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        self.pb_imp.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_imp"))))
+        self.pb_exp.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_exp"))))
+        self.pb_save.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_save"))))
+        self.pb_monthly.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_month"))))
+        self.pb_daily.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_day"))))
+        self.WEEK_DAYS = [tr(day) for day in (
+            "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")]
         self.add_tray()
-        self.set_i18n()
+        self.cb_autosave.setText(tr("AUTO"))
+        self.lb_location.setText(tr("location"))
+        self.lb_weather.setText(tr("whether"))
+        self.action_diary.setText(tr("Diary"))
+        self.action_interest.setText(tr("Interest"))
+        self.action_bill.setText(tr("Bill"))
+        self.action_note.setText(tr("Note"))
+        self.action_exit.setText(tr("Exit"))
+
         self.window_interest = None
         self.window_bill = None
         self.window_note = None
         self.pb_save.setEnabled(False)
-        self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        first_day_of_week = int(utils.load_config("global", "first_day_of_week")) % 7
+        self.tw_content.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch)
+        self.tw_content.verticalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch)
+        first_day_of_week = int(utils.load_config(
+            "global", "first_day_of_week")) % 7
         if first_day_of_week == 0:
             first_day_of_week += 7
         self.first_day_of_week = first_day_of_week
-        self.last_day_of_week = first_day_of_week + 6 if first_day_of_week < 2 else first_day_of_week - 1
+        self.last_day_of_week = first_day_of_week + \
+            6 if first_day_of_week < 2 else first_day_of_week - 1
         self.calendar.setFirstDayOfWeek(Qt.DayOfWeek(first_day_of_week))
         self.date = QDate.currentDate()
-        self.diaries = diary_utils.get_month_diary(self.date.year(), self.date.month())
+        self.diaries = diary_utils.get_month_diary(
+            self.date.year(), self.date.month())
         self.calendar.setSelectedDate(self.date)
         self.set_daily_view()
         self.update_day_selected()
 
     def cb_autosave_changed(self):
         self.pb_save.setEnabled(not self.cb_autosave.isChecked())
-
-    def set_i18n(self):
-        self.language = utils.load_config("global", "language")
-        if self.language == "zh":
-            self.calendar.setLocale(self.locale())
-            self.WEEK_DAYS = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
-            self.pb_daily.setText("日视图")
-            self.pb_monthly.setText("月视图")
-            self.cb_autosave.setText("自动")
-            self.lb_location.setText("地点")
-            self.lb_weather.setText("天气")
-            self.action_diary.setText("日记")
-            self.action_interest.setText("兴趣")
-            self.action_bill.setText("账单")
-            self.action_note.setText("笔记")
-            self.action_exit.setText("退出")
 
     def add_tray(self):
         self.tray = QSystemTrayIcon(self)
@@ -94,10 +101,14 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.action_exit = QAction("&Exit", tray_menu)
 
         self.action_diary.setIcon(QIcon(self.logo_path))
-        self.action_interest.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_interest"))))
-        self.action_bill.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_bill"))))
-        self.action_note.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_note"))))
-        self.action_exit.setIcon(QIcon(utils.get_path(utils.load_config("style", "icon_exit"))))
+        self.action_interest.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_interest"))))
+        self.action_bill.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_bill"))))
+        self.action_note.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_note"))))
+        self.action_exit.setIcon(QIcon(utils.get_path(
+            utils.load_config("style", "icon_exit"))))
 
         self.action_diary.triggered.connect(self.show_or_hide_window)
         self.action_interest.triggered.connect(self.open_interest_window)
@@ -113,13 +124,15 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         tray_menu.addAction(self.action_exit)
 
         self.tray.setContextMenu(tray_menu)
-        self.tray.setToolTip("Diary")
+        self.tray.setToolTip(tr("Diary"))
         self.tray.activated.connect(self.tray_activated)
         self.tray.show()
 
     def month_changed(self):
-        self.date = QDate(self.calendar.yearShown(), self.calendar.monthShown(), 1)
-        self.diaries = diary_utils.get_month_diary(self.date.year(), self.date.month())
+        self.date = QDate(self.calendar.yearShown(),
+                          self.calendar.monthShown(), 1)
+        self.diaries = diary_utils.get_month_diary(
+            self.date.year(), self.date.month())
         self.calendar.selectedDate()
         if self.view == self.VIEW_DAILY:
             self.update_daily_diary()
@@ -133,7 +146,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         date_ori = self.date
         self.date = date
         if date_ori.year() != date.year() or date_ori.month() != date.month():
-            self.diaries = diary_utils.get_month_diary(self.date.year(), self.date.month())
+            self.diaries = diary_utils.get_month_diary(
+                self.date.year(), self.date.month())
         if self.view == self.VIEW_DAILY:
             self.update_daily_diary()
         else:
@@ -141,7 +155,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 self.disconnect_all()
                 for row in range(6):
                     for col in range(7):
-                        te = self.get_table_text_edit(self.tw_content, row, col)
+                        te = self.get_table_text_edit(
+                            self.tw_content, row, col)
                         if te.date == self.date:
                             te.setFocus()
                 self.connect_all()
@@ -162,7 +177,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         tw = self.tw_content
         tw.setRowCount(1)
         tw.setColumnCount(1)
-        tw.setHorizontalHeaderLabels((self.WEEK_DAYS[self.date.dayOfWeek() - 1],))
+        tw.setHorizontalHeaderLabels(
+            (self.WEEK_DAYS[self.date.dayOfWeek() - 1],))
         diary = self.diaries.get(utils.date2int(self.date.toPython()))
         te = self.get_table_text_edit(tw, 0, 0)
         self.reconnect(te.focusOut, self.diary_edited)
@@ -181,7 +197,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         tw = self.tw_content
         tw.setRowCount(6)
         tw.setColumnCount(7)
-        tw_labels = self.WEEK_DAYS[self.first_day_of_week - 1:] + self.WEEK_DAYS[:self.first_day_of_week - 1]
+        tw_labels = self.WEEK_DAYS[self.first_day_of_week -
+                                   1:] + self.WEEK_DAYS[:self.first_day_of_week - 1]
         tw.setHorizontalHeaderLabels(tw_labels)
         day = self.get_first_day_of_current_page()
         for row in range(6):
@@ -200,7 +217,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.connect_all()
 
     def update_day_selected(self):
-        location = utils.load_config("global", "location") or QLocale.countryToCode(self.locale().country())
+        location = utils.load_config(
+            "global", "location") or QLocale.countryToCode(self.locale().country())
         date_info = ""
         if location == "CN":
             date_info = utils.lunar_string(self.date.toPython())
@@ -279,16 +297,28 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.start_task(diary_utils.update_diaries, self.diaries)
 
     def btn_export(self):
-        file, _ = QFileDialog.getSaveFileName(self, "Export to xlsx file", "", filter="Excel File (*.xlsx);; All Files (*);")
+        file, _ = QFileDialog.getSaveFileName(self, tr(
+            "Export to xlsx file"), "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             diary_utils.exp(file)
 
     def btn_import(self):
         file, _ = QFileDialog.getOpenFileName(
-            self, "Import from xlsx file [REPLACE!]", "", filter="Excel File (*.xlsx);; All Files (*);")
+            self, tr("Import from xlsx file [REPLACE!]"), "", filter="Excel File (*.xlsx);; All Files (*);")
         if file:
             diary_utils.imp(file)
             self.month_changed()
+
+    def login_expired(self):
+        if self.expired > 0:
+            self.tray.setVisible(False)
+            if time.time() - self.time_logined > self.expired:
+                if not config_utils.login(max_input=1):
+                    self.tray.setVisible(True)
+                    return True
+                self.time_logined = time.time()
+        self.tray.setVisible(True)
+        return False
 
     def tray_activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
@@ -299,6 +329,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             from core.interest.interest_window import InterestWindow
             self.window_interest = InterestWindow()
         if self.window_interest.isHidden():
+            if self.login_expired():
+                return
             if self.window_interest.isMaximized():
                 self.window_interest.showMaximized()
             elif self.window_interest.isMinimized():
@@ -314,6 +346,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             from core.bill.bill_window import BillWindow
             self.window_bill = BillWindow()
         if self.window_bill.isHidden():
+            if self.login_expired():
+                return
             if self.window_bill.isMaximized():
                 self.window_bill.showMaximized()
             elif self.window_bill.isMinimized():
@@ -329,6 +363,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             from core.note.note_window import NoteWindow
             self.window_note = NoteWindow()
         if self.window_note.isHidden():
+            if self.login_expired():
+                return
             if self.window_note.isMaximized():
                 self.window_note.showMaximized()
             elif self.window_note.isMinimized():
@@ -353,6 +389,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 self.set_monthly_view()
             elif event.key() == Qt.Key.Key_D:
                 self.set_daily_view()
+            elif event.key() == Qt.Key.Key_P:
+                config_utils.change_pwd()
         else:
             return super().keyPressEvent(event)
 
@@ -370,6 +408,8 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def show_or_hide_window(self):
         if self.isHidden():
+            if self.login_expired():
+                return
             if self.isMaximized():
                 self.showMaximized()
             elif self.isMinimized():

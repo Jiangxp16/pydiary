@@ -1,7 +1,6 @@
 import datetime
 
-from core.util import sqlutils
-from core.util import utils
+from core.util import sql_utils, utils
 
 sql_create = """
 CREATE TABLE IF NOT EXISTS interest (
@@ -19,15 +18,15 @@ CREATE TABLE IF NOT EXISTS interest (
     remark TEXT NOT NULL
 );
 """
-sqlutils.cur.execute(sql_create)
+sql_utils.cur.execute(sql_create)
 
 # sql_create_index = "CREATE INDEX IF NOT EXISTS index_sort ON interest (sort);"
 # sqlutils.cur.execute(sql_create_index)
 # sqlutils.conn.commit()
 
 sql_update = "UPDATE interest SET `sort`=7 WHERE `sort`=0"
-sqlutils.cur.execute(sql_update)
-sqlutils.conn.commit()
+sql_utils.cur.execute(sql_update)
+sql_utils.conn.commit()
 
 
 class Interest:
@@ -76,7 +75,7 @@ class Interest:
 
 
 def get_last():
-    rs = sqlutils.get_last("interest")
+    rs = sql_utils.get_last("interest")
     if rs is not None:
         return Interest(*rs)
     return None
@@ -87,18 +86,18 @@ def add(interest=None, **kwargs):
         interest = Interest(**kwargs)
         interest.updated = utils.date2int(datetime.date.today())
         interest.added = utils.date2int(datetime.date.today())
-    if sqlutils.insert("INSERT INTO interest (`added`, `updated`, `name`, `sort`, `progress`, `publish`, `date`, \
+    if sql_utils.execute("INSERT INTO interest (`added`, `updated`, `name`, `sort`, `progress`, `publish`, `date`, \
                            `score_db`, `score_imdb`, `score`, `remark`) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                       interest.params()):
+                         interest.params()):
         return get_last()
     return None
 
 
-def add_many(interests):
+def add_many(interests: list[Interest]):
     sql_cmd = "INSERT INTO interest (`added`, `updated`, `name`, `sort`, `progress`, `publish`, `date`, \
                            `score_db`, `score_imdb`, `score`, `remark`) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
     data_list = [interest.params() for interest in interests]
-    return sqlutils.insert_many(sql_cmd, data_list)
+    return sql_utils.execute_many(sql_cmd, data_list)
 
 
 def get_list_by(**kwargs):
@@ -115,7 +114,7 @@ def get_list_by(**kwargs):
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
     sql_cmd += " ORDER BY `id` ASC"
-    rs_list = sqlutils.select(sql_cmd, args)
+    rs_list = sql_utils.select(sql_cmd, args)
     for rs in rs_list:
         interests.append(Interest(*rs))
     return interests
@@ -126,8 +125,22 @@ def update(interest: Interest):
     interest.name = interest.name.strip()
     interest.progress = interest.progress.strip()
     interest.remark = interest.remark.strip()
-    return sqlutils.update("UPDATE interest SET `added`=?, `updated`=?, `name`=?, `sort`=?, `progress`=?, `publish`=?, `date`=?,\
-                           `score_db`=?, `score_imdb`=?, `score`=?, `remark`=? WHERE `id`=?", (*interest.params(), interest.id))
+    sql_cmd = "UPDATE interest SET `added`=?, `updated`=?, `name`=?, `sort`=?, `progress`=?, `publish`=?, `date`=?,\
+                           `score_db`=?, `score_imdb`=?, `score`=?, `remark`=? WHERE `id`=?"
+    return sql_utils.execute(sql_cmd, (*interest.params(), interest.id))
+
+
+def update_many(interests: list[Interest]):
+    today = utils.date2int(datetime.date.today())
+    for interest in interests:
+        interest.updated = today
+        interest.name = interest.name.strip()
+        interest.progress = interest.progress.strip()
+        interest.remark = interest.remark.strip()
+    sql_cmd = "UPDATE interest SET `added`=?, `updated`=?, `name`=?, `sort`=?, `progress`=?, `publish`=?, `date`=?,\
+                           `score_db`=?, `score_imdb`=?, `score`=?, `remark`=? WHERE `id`=?"
+    data_list = [(*interest.params(), interest.id) for interest in interests]
+    return sql_utils.execute_many(sql_cmd, data_list)
 
 
 def add_or_update(interest):
@@ -141,9 +154,9 @@ def delete(**kwargs):
         kwargs.pop("sort")
     if len(kwargs) == 0:
         try:
-            sqlutils.cur.execute("DROP TABLE IF EXISTS interest;")
-            sqlutils.conn.commit()
-            sqlutils.cur.execute(sql_create)
+            sql_utils.cur.execute("DROP TABLE IF EXISTS interest;")
+            sql_utils.conn.commit()
+            sql_utils.cur.execute(sql_create)
             return True
         except Exception as e:
             print(e.args)
@@ -156,7 +169,7 @@ def delete(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    return sqlutils.delete(sql_cmd, args)
+    return sql_utils.execute(sql_cmd, args)
 
 
 def exp(file, sort=0):
