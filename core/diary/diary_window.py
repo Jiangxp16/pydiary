@@ -4,8 +4,8 @@ import time
 from core.diary import diary_utils
 from core.diary.diary import Ui_Diary
 from core.util.qt_utils import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
-                               QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
-from core.util import utils, config_utils
+                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView)
+from core.util import utils, config_utils, dbconfig_utils
 from core.util.i18n_utils import tr
 
 
@@ -35,19 +35,19 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def init(self):
         self.time_logined = time.time()
-        self.logo_path = utils.get_path(utils.load_config("style", "logo"))
-        self.expired = int(utils.load_config("global", "login_expired"))
+        self.logo_path = utils.get_path(config_utils.load_config("style", "logo"))
+        self.expired = int(config_utils.load_config("global", "login_expired"))
         self.setWindowIcon(QIcon(self.logo_path))
         self.pb_imp.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_imp"))))
+            config_utils.load_config("style", "icon_imp"))))
         self.pb_exp.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_exp"))))
+            config_utils.load_config("style", "icon_exp"))))
         self.pb_save.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_save"))))
+            config_utils.load_config("style", "icon_save"))))
         self.pb_monthly.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_month"))))
+            config_utils.load_config("style", "icon_month"))))
         self.pb_daily.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_day"))))
+            config_utils.load_config("style", "icon_day"))))
         self.WEEK_DAYS = [tr(day) for day in (
             "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")]
         self.add_tray()
@@ -64,12 +64,9 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.window_bill = None
         self.window_note = None
         self.pb_save.setEnabled(False)
-        self.tw_content.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch)
-        self.tw_content.verticalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch)
-        first_day_of_week = int(utils.load_config(
-            "global", "first_day_of_week")) % 7
+        self.tw_content.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.tw_content.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        first_day_of_week = int(config_utils.load_config("global", "first_day_of_week")) % 7
         if first_day_of_week == 0:
             first_day_of_week += 7
         self.first_day_of_week = first_day_of_week
@@ -102,13 +99,13 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
         self.action_diary.setIcon(QIcon(self.logo_path))
         self.action_interest.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_interest"))))
+            config_utils.load_config("style", "icon_interest"))))
         self.action_bill.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_bill"))))
+            config_utils.load_config("style", "icon_bill"))))
         self.action_note.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_note"))))
+            config_utils.load_config("style", "icon_note"))))
         self.action_exit.setIcon(QIcon(utils.get_path(
-            utils.load_config("style", "icon_exit"))))
+            config_utils.load_config("style", "icon_exit"))))
 
         self.action_diary.triggered.connect(self.show_or_hide_window)
         self.action_interest.triggered.connect(self.open_interest_window)
@@ -217,7 +214,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.connect_all()
 
     def update_day_selected(self):
-        location = utils.load_config(
+        location = config_utils.load_config(
             "global", "location") or QLocale.countryToCode(self.locale().country())
         date_info = ""
         if location == "CN":
@@ -313,7 +310,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         if self.expired > 0:
             self.tray.setVisible(False)
             if time.time() - self.time_logined > self.expired:
-                if not config_utils.login(max_input=1):
+                if not dbconfig_utils.login(max_input=1):
                     self.tray.setVisible(True)
                     return True
                 self.time_logined = time.time()
@@ -390,7 +387,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             elif event.key() == Qt.Key.Key_D:
                 self.set_daily_view()
             elif event.key() == Qt.Key.Key_P:
-                config_utils.change_pwd()
+                dbconfig_utils.change_pwd()
         else:
             return super().keyPressEvent(event)
 

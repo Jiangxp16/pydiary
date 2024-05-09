@@ -8,13 +8,9 @@ You can add password now on the beginning. All string data will be encrypted wit
 
 ## **Build with pyinstaller**
 Use your own distpath.
-Build one-file mode which easily to share.
+Build one-file mode with:
 ```
-pyinstaller build_f.spec -y --distpath "E:\Program Files\Diary"
-```
-Or build a directory. Attention that it will empty original directory. It would be better to control file size if built with multiple exes in this mode.
-```
-pyinstaller build_d.spec -y --distpath "E:\Program Files\Diary"
+pyinstaller build.spec -y --distpath "E:\Program Files\Diary"
 ```
 
 ## **Dependencies**
@@ -40,7 +36,7 @@ hide_on_startup=0
 login_expired=3600
 
 [style]
-font=Times New Roman,Kaiti
+font=Arial,Kaiti
 font_size=18
 logo=style/logo.png
 icon_interest=style/interest.png
