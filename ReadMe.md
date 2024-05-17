@@ -12,6 +12,10 @@ Build one-file mode with:
 ```
 pyinstaller -F core\start.py -w -i style\logo.png -n Diary --add-data=".\style\*;.\style" --hidden-import=holidays.countries --exclude-module PIL --distpath "E:\Program Files\Diary"
 ```
+or build with your own spec file:
+```
+pyinstaller Diary.spec -y --distpath "E:\Program Files\Diary"
+```
 
 ## **Dependencies**
 Developed with python 3.10.6.
