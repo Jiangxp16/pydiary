@@ -44,7 +44,9 @@ class NoteWindow(Ui_Note, BaseWindow):
         self.tw_note.setColumnWidth(2, 110)
         for col in range(3, 7):
             self.tw_note.setColumnWidth(col, 80)
-        self.tw_note.verticalHeader().setDefaultSectionSize(60)
+        self.tw_note.verticalHeader().setDefaultSectionSize(self.tw_note.verticalHeader().defaultSectionSize() * 2)
+        # self.tw_note.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        # self.tw_note.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         self.tw_note.hideColumn(0)
         self.cb_state.addItems(self.states)
         self.update_table_note()
@@ -150,16 +152,17 @@ class NoteWindow(Ui_Note, BaseWindow):
             hidden = (len(self.filter) > 0 and self.filter.upper() not in str(note).upper()) or \
                 (self.state == 1 and note.process >= 100) or (self.state == 2 and note.process < 100)
             tw.setRowHidden(row, hidden)
+            # tw.verticalHeader().setSectionResizeMode(row, QHeaderView.ResizeMode.ResizeToContents)
         tw.setSortingEnabled(True)
         if self.note is not None:
             for row in range(tw.rowCount()):
                 if self.get_table_value(tw, row, 0) == note.id:
-                    self.tw_note.selectRow(row)
+                    tw.selectRow(row)
                     self.row_note = row
                     break
         elif self.row_note > -1 and tw.rowCount() > 0:
             self.row_note = min(self.row_note, tw.rowCount() - 1)
-            self.tw_note.selectRow(self.row_note)
+            tw.selectRow(self.row_note)
             self.note_sel_changed()
         self.connect_all()
 

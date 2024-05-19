@@ -96,6 +96,50 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
+         <widget class="QPushButton" name="pb_imp">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Import</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_exp">
+          <property name="minimumSize">
+           <size>
+            <width>40</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>40</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>Export</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -107,6 +151,22 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_autosave">
+          <property name="toolTip">
+           <string>Auto save.</string>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pb_save">
@@ -139,76 +199,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QCheckBox" name="cb_autosave">
-          <property name="text">
-           <string>AUTO</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_3">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Fixed</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>10</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pb_imp">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>IMPORT</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pb_exp">
-          <property name="minimumSize">
-           <size>
-            <width>40</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="toolTip">
-           <string>EXPORT</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>
@@ -228,7 +218,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>whether:</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -254,7 +244,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>location:</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -301,7 +291,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>Ctrl+M: Month View</string>
+           <string>Ctrl+M: Month view</string>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
@@ -332,7 +322,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>Ctrl+D: Daily View</string>
+           <string>Ctrl+D: Daily view</string>
           </property>
           <property name="styleSheet">
            <string notr="true"/>

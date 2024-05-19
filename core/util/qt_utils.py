@@ -1,6 +1,6 @@
 import os
 
-from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QIcon, QAction, QFont
+from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QImage, QIcon, QAction, QFont
 from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
 from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog
 

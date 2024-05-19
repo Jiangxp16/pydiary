@@ -34,6 +34,7 @@ Build config.ini in program path to replace default configuration, usable config
 [global]
 db_name=diary.db
 first_day_of_week=7
+location=CN
 language=zh
 multi_thread=1
 hide_on_startup=0
