@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QImage, QIcon, QAction, QFont
-from PySide6.QtCore import QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
+from PySide6.QtCore import QCoreApplication, QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
 from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog
 
 from core.util import utils, config_utils
@@ -156,7 +156,9 @@ class BaseWindow(QMainWindow):
         return cb
 
     def get_table_text_edit(self, table: QTableWidget, row, col) -> TextEdit:
-        return self.get_table_widget(table, row, col, TextEdit)
+        te: TextEdit = self.get_table_widget(table, row, col, TextEdit)
+        te.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        return te
 
     def get_table_line(self, table: QTableWidget, row, col) -> LineEdit:
         le: LineEdit = self.get_table_widget(table, row, col, LineEdit)

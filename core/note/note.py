@@ -45,6 +45,11 @@ class Ui_Note(object):
 
         self.tw_note = QTableWidget(self.centralwidget)
         self.tw_note.setObjectName(u"tw_note")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.tw_note.sizePolicy().hasHeightForWidth())
+        self.tw_note.setSizePolicy(sizePolicy)
         self.tw_note.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
         self.tw_note.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tw_note.setTextElideMode(Qt.ElideNone)
@@ -56,6 +61,8 @@ class Ui_Note(object):
         self.tw_note.horizontalHeader().setProperty("showSortIndicator", False)
         self.tw_note.horizontalHeader().setStretchLastSection(True)
         self.tw_note.verticalHeader().setVisible(True)
+        self.tw_note.verticalHeader().setCascadingSectionResizes(False)
+        self.tw_note.verticalHeader().setMinimumSectionSize(0)
 
         self.verticalLayout.addWidget(self.tw_note)
 

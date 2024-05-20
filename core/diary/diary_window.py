@@ -4,7 +4,7 @@ import time
 from core.diary import diary_utils
 from core.diary.diary import Ui_Diary
 from core.util.qt_utils import (BaseWindow, TextEdit, QKeyEvent, QIcon, QAction, QDate, Qt, QEvent,
-                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView, QPixmap)
+                                QLocale, QMenu, QSystemTrayIcon, QFileDialog, QHeaderView, QPixmap, QCoreApplication)
 from core.util import utils, config_utils, dbconfig_utils
 from core.util.i18n_utils import tr
 
@@ -430,4 +430,4 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             self.hide()
 
     def close_window(self):
-        sys.exit(0)
+        QCoreApplication.exit(0)
