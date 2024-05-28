@@ -2,7 +2,7 @@ import os
 
 from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QImage, QIcon, QAction, QFont
 from PySide6.QtCore import QCoreApplication, QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
-from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog
+from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog, QStyledItemDelegate
 
 from core.util import utils, config_utils
 
@@ -87,6 +87,29 @@ class LineEdit(QLineEdit):
     def setText(self, text: str) -> None:
         self.text_last = text
         return super().setText(text)
+
+
+class NoSelectionDelegate(QStyledItemDelegate):
+
+    def createEditor(self, parent: QWidget, option, index) -> QWidget:
+        editor = super().createEditor(parent, option, index)
+        if not isinstance(editor, QLineEdit):
+            line = editor.findChild(QLineEdit)
+        else:
+            line = editor
+        if line is not None:
+            def deselect():
+                try:
+                    line.selectionChanged.disconnect(deselect)
+                except Exception:
+                    pass
+                line.deselect()
+                line.setCursorPosition(len(line.text()))
+                # gpos = QCursor.pos()
+                # lps = line.mapFromGlobal(gpos)
+                # line.setCursorPosition(line.cursorPositionAt(lps))
+            line.selectionChanged.connect(deselect)
+        return editor
 
 
 class BaseWindow(QMainWindow):

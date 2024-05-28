@@ -48,7 +48,7 @@ config = {
         "icon_location": "style/location.png",
         "icon_weather": "style/weather.png",
         "icon_auto": "style/auto.png",
-        "qss": None,
+        "qss": "style/ubuntu.qss",
     }
 }
 CONFIG_FILE = "config.ini"
