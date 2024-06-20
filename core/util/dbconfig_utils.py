@@ -69,7 +69,9 @@ def change_pwd():
                                                tr("OLD PASSWORD"),
                                                QLineEdit.Password,
                                                flags=Qt.WindowStaysOnTopHint)
-    if not ok_pressed or pwd_old != encrypt_utils.key:
+    if not ok_pressed:
+        return False
+    if pwd_old != encrypt_utils.key:
         show_msg(tr("Old password not match!"), "WARNING")
         return False
     pwd_new, ok_pressed = QInputDialog.getText(widget,
@@ -87,7 +89,9 @@ def change_pwd():
                                                  tr("NEW PASSWORD"),
                                                  QLineEdit.Password,
                                                  flags=Qt.WindowStaysOnTopHint)
-    if not ok_pressed or pwd_new_2 != pwd_new:
+    if not ok_pressed:
+        return False
+    if pwd_new_2 != pwd_new:
         show_msg(tr("New password not match!"), "WARNING")
         return False
 

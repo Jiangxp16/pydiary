@@ -1,66 +1,19 @@
 import os
 
-from PySide6.QtGui import QGuiApplication, QCloseEvent, QFocusEvent, QKeyEvent, QPixmap, QImage, QIcon, QAction, QFont
-from PySide6.QtCore import QCoreApplication, QDate, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
-from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog, QStyledItemDelegate
+from PySide6.QtGui import QGuiApplication, QCloseEvent, QTextCursor, QFocusEvent, QKeyEvent, QPixmap, QImage, QIcon, QAction, QFont
+from PySide6.QtCore import QAbstractItemModel, QCoreApplication, QModelIndex, QObject, QDate, QPersistentModelIndex, QRect, Qt, QEvent, QLocale, Signal, QThread, QThreadPool, QRunnable, QSharedMemory
+from PySide6.QtWidgets import QWidget, QApplication, QMainWindow, QWidgetAction, QLabel, QCheckBox, QTableWidget, QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox, QMessageBox, QSizePolicy, QMenu, QSystemTrayIcon, QFileDialog, QPlainTextEdit, QHeaderView, QTableWidgetItem, QStyle, QInputDialog, QItemDelegate, QStyledItemDelegate, QItemEditorFactory
 
 from core.util import utils, config_utils
 
 
-def wheel_event(widget: QWidget, event: QEvent = None):
-    return
-
-
-def key_pressed(table: QTableWidget, event: QKeyEvent):
-    if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-        if event.key() == Qt.Key.Key_C:
-            text = ""
-            row = table.currentRow()
-            col = table.currentColumn()
-            item = table.item(row, col)
-            widget = table.cellWidget(row, col)
-            if widget is not None:
-                if isinstance(widget, QComboBox):
-                    text = widget.currentText()
-                elif isinstance(widget, QPlainTextEdit):
-                    text = widget.toPlainText()
-                elif isinstance(widget, QLineEdit):
-                    text = widget.text()
-            elif item is not None:
-                text = item.text()
-            clipboard = QGuiApplication.clipboard()
-            clipboard.setText(text)
-        elif event.key() == Qt.Key.Key_V:
-            clipboard = QGuiApplication.clipboard()
-            text = clipboard.text()
-            row = table.currentRow()
-            col = table.currentColumn()
-            widget = table.cellWidget(row, col)
-            item = table.item(row, col)
-            if widget is not None:
-                if isinstance(widget, QComboBox):
-                    widget.setCurrentText(text)
-                elif isinstance(widget, QPlainTextEdit):
-                    widget.setPlainText(text)
-                elif isinstance(widget, QLineEdit):
-                    widget.setText(text)
-            elif item is not None:
-                value = item.data(Qt.ItemDataRole.DisplayRole)
-                try:
-                    item.setData(Qt.ItemDataRole.DisplayRole, type(value)(text))
-                except Exception:
-                    return
-    return super(QTableWidget, table).keyPressEvent(event)
-
-
-QTableWidget.keyPressEvent = key_pressed
-QComboBox.wheelEvent = wheel_event
-QDoubleSpinBox.wheelEvent = wheel_event
-QSpinBox.wheelEvent = wheel_event
-
-
 class TextEdit(QPlainTextEdit):
+    focusIn = Signal()
     focusOut = Signal()
+
+    def __init__(self, parent=None):
+        QPlainTextEdit.__init__(self, parent)
+        self.text_last = None
 
     def focusOutEvent(self, e: QFocusEvent) -> None:
         text = self.toPlainText()
@@ -69,13 +22,22 @@ class TextEdit(QPlainTextEdit):
             self.focusOut.emit()
         return super().focusOutEvent(e)
 
+    def focusInEvent(self, e: QFocusEvent) -> None:
+        self.focusIn.emit()
+        return super().focusInEvent(e)
+
     def setPlainText(self, text: str) -> None:
         self.text_last = text
         return super().setPlainText(text)
 
 
 class LineEdit(QLineEdit):
+    focusIn = Signal()
     focusOut = Signal()
+
+    def __init__(self, parent=None):
+        QLineEdit.__init__(self, parent)
+        self.text_last = None
 
     def focusOutEvent(self, e: QFocusEvent) -> None:
         text = self.text()
@@ -84,36 +46,381 @@ class LineEdit(QLineEdit):
             self.focusOut.emit()
         return super().focusOutEvent(e)
 
+    def focusInEvent(self, e: QFocusEvent) -> None:
+        self.focusIn.emit()
+        return super().focusInEvent(e)
+
     def setText(self, text: str) -> None:
         self.text_last = text
         return super().setText(text)
 
 
-class NoSelectionDelegate(QStyledItemDelegate):
+class WheelEventFilter(QObject):
+
+    def __init__(self) -> None:
+        QObject.__init__(self)
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        if event.type() == QEvent.Wheel:
+            return True
+        return super().eventFilter(watched, event)
+
+
+wheel_event_filter = WheelEventFilter()
+
+
+class ComboBox(QComboBox):
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.wheel_enabled = False
+
+    def wheelEvent(self, event: QEvent) -> None:
+        if self.wheel_enabled:
+            return super().wheelEvent(event)
+
+    def enable_wheel(self, enabled=True):
+        self.wheel_enabled = enabled
+
+    def set_style(self, read_only=True, align_center=True):
+        self.view().setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.setEditable(True)
+        self.lineEdit().setReadOnly(read_only)
+
+        if align_center:
+            self.lineEdit().setAlignment(Qt.AlignmentFlag.AlignCenter)
+            model = self.view().model()
+            if model:
+                for i in range(model.rowCount()):
+                    if model.item(i):
+                        model.item(i).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    def set_current_text(self, text: str):
+        self.setCurrentIndex(-1)
+        for i in range(self.count()):
+            if text == self.itemText(i):
+                self.setCurrentIndex(i)
+                break
+
+
+class SpinBox(QSpinBox):
+    focusIn = Signal()
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.wheel_enabled = False
+        self.installEventFilter(wheel_event_filter)
+        self.setMinimum(-99999999)
+        self.setMaximum(99999999)
+        self.setKeyboardTracking(False)
+        self.setAccelerated(True)
+        self.setStepType(self.StepType.AdaptiveDecimalStepType)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setButtonSymbols(self.ButtonSymbols.NoButtons)
+
+    def focusInEvent(self, event: QFocusEvent) -> None:
+        self.focusIn.emit()
+        return super().focusInEvent(event)
+
+    def enable_wheel(self, enabled=True):
+        self.wheel_enabled = enabled
+
+    def wheelEvent(self, event: QEvent) -> None:
+        if self.wheel_enabled:
+            return super().wheelEvent(event)
+
+
+class DoubleSpinBox(QDoubleSpinBox):
+    focusIn = Signal()
+
+    def __init__(self, parent: QWidget | None = ...) -> None:
+        super().__init__(parent)
+        self.wheel_enabled = False
+        self.installEventFilter(wheel_event_filter)
+        self.setMinimum(-float("inf"))
+        self.setMaximum(float("inf"))
+        self.setKeyboardTracking(False)
+        self.setAccelerated(True)
+        self.setStepType(self.StepType.AdaptiveDecimalStepType)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setButtonSymbols(self.ButtonSymbols.NoButtons)
+
+    def focusInEvent(self, event: QFocusEvent) -> None:
+        self.focusIn.emit()
+        return super().focusInEvent(event)
+
+    def enable_wheel(self, enabled=True):
+        self.wheel_enabled = enabled
+
+    def textFromValue(self, val: float) -> str:
+        text = super().textFromValue(val)
+        if "." in text:
+            text = text.rstrip("0")
+        return text
+
+    def wheelEvent(self, event: QEvent) -> None:
+        if self.wheel_enabled:
+            return super().wheelEvent(event)
+
+
+class ItemDelegate(QStyledItemDelegate):
+    def __init__(self, decimals=2, step=0.01, **kwargs) -> None:
+        super().__init__()
+        self.decimals = decimals
+        self.step = step
+        self.set_kwargs(decimals=decimals, step=step, **kwargs)
+
+    def set_kwargs(self, **kwargs):
+        if "decimals" in kwargs:
+            self.decimals = kwargs["decimals"]
+        if "step" in kwargs:
+            self.step = kwargs["step"]
+        self.col_dict = kwargs.get("col_dict", {})
+        self.labels_dict = kwargs.get("labels_dict", {})
 
     def createEditor(self, parent: QWidget, option, index) -> QWidget:
-        editor = super().createEditor(parent, option, index)
-        if not isinstance(editor, QLineEdit):
-            line = editor.findChild(QLineEdit)
+        editor_col = index.column()
+        editor_data = index.data()
+        editor_type = self.col_dict.get(editor_col)
+        if editor_type is None:
+            if isinstance(editor_data, float):
+                editor_type = DoubleSpinBox
+            elif isinstance(editor_data, int):
+                editor_type = SpinBox
+            else:
+                editor_type = LineEdit
+        if editor_type == TextEdit:
+            editor = TextEdit(parent)
+            editor.setContentsMargins(0, 0, 0, 0)
+            editor.selectAll()
+        elif editor_type == DoubleSpinBox:
+            editor = DoubleSpinBox(parent)
+            editor.setDecimals(self.decimals)
+            editor.setSingleStep(self.step)
+            editor.setFrame(False)
+        elif editor_type == SpinBox:
+            editor = SpinBox(parent)
+            editor.setFrame(False)
+        elif editor_type == LineEdit:
+            editor = LineEdit(parent)
+        elif editor_type == ComboBox:
+            editor = ComboBox(parent)
+            editor.enable_wheel()
+            editor.addItems(self.labels_dict[editor_col])
+            editor.currentIndexChanged.connect(editor.clearFocus)
         else:
-            line = editor
-        if line is not None:
-            def deselect():
-                try:
-                    line.selectionChanged.disconnect(deselect)
-                except Exception:
-                    pass
+            editor = super().createEditor(parent, option, index)
+        editor.setStyleSheet("border-radius: 0px;")
+
+        def deselect():
+            editor.focusIn.disconnect(deselect)
+            if isinstance(editor, TextEdit):
+                cursor = editor.textCursor()
+                cursor.movePosition(cursor.MoveOperation.End)
+                editor.setTextCursor(cursor)
+            else:
+                line = editor
+                if isinstance(editor, SpinBox | DoubleSpinBox):
+                    line = editor.findChild(QLineEdit)
                 line.deselect()
-                line.setCursorPosition(len(line.text()))
-                # gpos = QCursor.pos()
-                # lps = line.mapFromGlobal(gpos)
-                # line.setCursorPosition(line.cursorPositionAt(lps))
-            line.selectionChanged.connect(deselect)
+                line.setCursorPosition(len(editor.text()))
+        if isinstance(editor, SpinBox | DoubleSpinBox | LineEdit | TextEdit):
+            editor.focusIn.connect(deselect)
         return editor
+
+    def setEditorData(self, editor: QWidget, index: QModelIndex | QPersistentModelIndex) -> None:
+        if isinstance(editor, TextEdit):
+            return editor.setPlainText(index.data(Qt.ItemDataRole.DisplayRole))
+        elif isinstance(editor, ComboBox):
+            return editor.set_current_text(index.data(Qt.ItemDataRole.DisplayRole))
+        return super().setEditorData(editor, index)
+
+    def setModelData(self, editor: QWidget, model: QAbstractItemModel, index: QModelIndex | QPersistentModelIndex) -> None:
+        if isinstance(editor, TextEdit):
+            return model.setData(index, editor.toPlainText())
+        elif isinstance(editor, ComboBox):
+            return model.setData(index, editor.currentText())
+        return super().setModelData(editor, model, index)
+
+
+class StateLabel(QLabel):
+    OFF = DEFAULT = 0
+    ON = 1
+    ERROR = RUNNING = 2
+    WARNING = 3
+
+    STYLE_DICT = {
+        ON: "background-color:green",
+        OFF: "background-color:lightgray",
+        ERROR: "background-color:red",
+        WARNING: "background-color:yellow",
+    }
+
+    def __init__(self, state=DEFAULT, width=20, height=20, border_radius=10):
+        QLabel.__init__(self)
+        self.style = "border-radius:%dpx;" % border_radius
+        self.setMinimumHeight(height)
+        self.setMinimumWidth(width)
+        self.setMaximumHeight(height)
+        self.setMaximumWidth(width)
+        self.setGeometry(QRect(0, 0, width, height))
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed))
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.set_state(state)
+
+    def set_state(self, state):
+        self.setStyleSheet(self.style + self.STYLE_DICT.get(state, self.STYLE_DICT[self.DEFAULT]))
+
+
+class TableWidget(QTableWidget):
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            if event.key() == Qt.Key.Key_C:
+                text = ""
+                row = self.currentRow()
+                col = self.currentColumn()
+                item = self.item(row, col)
+                widget = self.cellWidget(row, col)
+                if widget is not None:
+                    if isinstance(widget, QComboBox):
+                        text = widget.currentText()
+                    elif isinstance(widget, QPlainTextEdit):
+                        text = widget.toPlainText()
+                    elif isinstance(widget, QLineEdit):
+                        text = widget.text()
+                elif item is not None:
+                    text = item.text()
+                clipboard = QGuiApplication.clipboard()
+                clipboard.setText(text)
+            elif event.key() == Qt.Key.Key_V:
+                clipboard = QGuiApplication.clipboard()
+                text = clipboard.text()
+                row = self.currentRow()
+                col = self.currentColumn()
+                widget = self.cellWidget(row, col)
+                item = self.item(row, col)
+                if widget is not None:
+                    if isinstance(widget, QComboBox):
+                        widget.setCurrentText(text)
+                    elif isinstance(widget, QPlainTextEdit):
+                        widget.setPlainText(text)
+                    elif isinstance(widget, QLineEdit):
+                        widget.setText(text)
+                elif item is not None:
+                    value = item.data(Qt.ItemDataRole.DisplayRole)
+                    try:
+                        item.setData(Qt.ItemDataRole.DisplayRole, type(value)(text))
+                    except Exception:
+                        return
+        return super().keyPressEvent(event)
+
+    def set_delegate(self, precision=2, step=0.01, **kwargs):
+        delegate = self.itemDelegate()
+        if isinstance(delegate, ItemDelegate):
+            delegate.set_kwargs(decimals=precision, step=step, **kwargs)
+        else:
+            self.setItemDelegate(ItemDelegate(precision, step, **kwargs))
+
+    def set_item(self, row, col, value, editable=True, center=False):
+        item = self.item(row, col)
+        if item is None:
+            item = QTableWidgetItem()
+            if center:
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.setItem(row, col, item)
+        item.setData(Qt.ItemDataRole.DisplayRole, value)
+        flag = item.flags()
+        if editable:
+            flag |= Qt.ItemFlag.ItemIsEditable
+        else:
+            flag &= ~Qt.ItemFlag.ItemIsEditable
+        item.setFlags(flag)
+
+    def get_value(self, row, col):
+        item = self.item(row, col)
+        if item is None:
+            return None
+        return item.data(Qt.ItemDataRole.DisplayRole)
+
+    def get_widget(self, row, col, widget_class):
+        widget = self.cellWidget(row, col)
+        if widget is None:
+            widget = widget_class(self)
+            widget.setContentsMargins(0, 0, 0, 0)
+            widget.row = row
+            widget.col = col
+            widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+            widget.setStyleSheet("border-radius: 0px;")
+            self.setCellWidget(row, col, widget)
+        return widget
+
+    def get_combo(self, row, col, labels=None) -> ComboBox:
+        cb = self.get_widget(row, col, ComboBox)
+        if labels is not None:
+            try:
+                cb.currentIndexChanged.disconnect()
+            except Exception:
+                pass
+            cb.clear()
+            cb.addItems(labels)
+        return cb
+
+    def get_check(self, row, col) -> QCheckBox:
+        return self.get_widget(row, col, QCheckBox)
+
+    def get_state(self, row, col) -> StateLabel:
+        return self.get_widget(row, col, StateLabel)
+
+    def get_text(self, row, col) -> TextEdit:
+        return self.get_widget(row, col, TextEdit)
+
+    def get_line(self, row, col) -> LineEdit:
+        return self.get_widget(row, col, LineEdit)
+
+    def set_style(self, resize_column=(), align_center=True, selected_row=-1):
+        self.setTextElideMode(Qt.TextElideMode.ElideNone)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for i in resize_column:
+            self.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeMode.ResizeToContents)
+        if align_center:
+            for i in range(self.rowCount()):
+                for j in range(self.columnCount()):
+                    item = self.item(i, j)
+                    if item is not None:
+                        item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        items = self.selectedItems()
+        if len(items) > 0:
+            if items[0].row() != selected_row:
+                self.selectRow(selected_row)
+        else:
+            self.selectRow(selected_row)
+
+    def get_selected_rows(self):
+        rows = set()
+        for item in self.selectedItems():
+            rows.add(item.row())
+        return list(rows)
+
+
+class QtTask(QRunnable, QObject):
+    complete_signal = Signal(object)
+
+    def __init__(self, func, args=(), kwargs=None, complete=None):
+        QRunnable.__init__(self)
+        QObject.__init__(self)
+        self._func = func
+        self._args = args
+        self._kwargs = kwargs if kwargs is not None else {}
+        if complete is not None:
+            self.complete_signal.connect(complete)
+
+    def run(self):
+        res = self._func(*self._args, **self._kwargs)
+        self.complete_signal.emit(res)
 
 
 class BaseWindow(QMainWindow):
-    thread_update = QThreadPool()
     multi_thread = int(config_utils.load_config("global", "multi_thread"))
 
     def __init__(self, parent=None):
@@ -131,76 +438,14 @@ class BaseWindow(QMainWindow):
             except Exception:
                 pass
 
-    def set_table_value(self, table: QTableWidget, row, col, value, editable=True, center=False):
-        item = table.item(row, col)
-        if item is None:
-            item = QTableWidgetItem()
-            table.setItem(row, col, item)
-        item.setData(Qt.ItemDataRole.DisplayRole, value)
-        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable if editable else item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-        if center:
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-    def get_table_value(self, table: QTableWidget, row, col):
-        item = table.item(row, col)
-        if item is None:
-            return None
-        return item.data(Qt.ItemDataRole.DisplayRole)
-
-    def start_task(self, func, *args, **kwargs):
+    def start_task(self, func, args=(), kwargs=None, complete=None):
+        kwargs = kwargs if kwargs is not None else {}
         if self.multi_thread:
-            class Task(QRunnable):
-                def run(self):
-                    func(*args, **kwargs)
-            self.thread_update.start(Task())
+            QThreadPool.globalInstance().start(QtTask(func, args, kwargs, complete))
         else:
-            func(*args, **kwargs)
-
-    def get_table_widget(self, table: QTableWidget, row, col, obj_class):
-        widget = table.cellWidget(row, col)
-        if widget is None:
-            widget = obj_class(table)
-            widget.setContentsMargins(0, 0, 0, 0)
-            widget.row = row
-            widget.col = col
-            widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-            table.setCellWidget(row, col, widget)
-        return widget
-
-    def get_table_combo(self, table: QTableWidget, row, col, labels=None) -> QComboBox:
-        cb: QComboBox = self.get_table_widget(table, row, col, QComboBox)
-        if labels is not None:
-            try:
-                cb.currentIndexChanged.disconnect()
-            except Exception:
-                pass
-            cb.clear()
-            cb.addItems(labels)
-        return cb
-
-    def get_table_text_edit(self, table: QTableWidget, row, col) -> TextEdit:
-        te: TextEdit = self.get_table_widget(table, row, col, TextEdit)
-        te.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        return te
-
-    def get_table_line(self, table: QTableWidget, row, col) -> LineEdit:
-        le: LineEdit = self.get_table_widget(table, row, col, LineEdit)
-        return le
-
-    def get_table_sb(self, table: QTableWidget, row, col) -> QSpinBox:
-        sb: QSpinBox = self.get_table_widget(table, row, col, QSpinBox)
-        sb.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
-        sb.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        sb.setKeyboardTracking(False)
-        return sb
-
-    def get_table_dsb(self, table: QTableWidget, row, col) -> QDoubleSpinBox:
-        sb: QDoubleSpinBox = self.get_table_widget(table, row, col, QDoubleSpinBox)
-        sb.setButtonSymbols(QDoubleSpinBox.ButtonSymbols.NoButtons)
-        sb.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        sb.setKeyboardTracking(False)
-        sb.setDecimals(1)
-        return sb
+            res = func(*args, **kwargs)
+            if complete is not None:
+                complete(res)
 
     def reconnect(self, signal, slot):
         try:

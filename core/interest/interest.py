@@ -15,10 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFrame,
-    QHBoxLayout, QHeaderView, QLineEdit, QMainWindow,
-    QPushButton, QSizePolicy, QSpacerItem, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QHBoxLayout,
+    QHeaderView, QLineEdit, QMainWindow, QPushButton,
+    QSizePolicy, QSpacerItem, QTableWidgetItem, QVBoxLayout,
+    QWidget)
+
+from core.util.qt_utils import (ComboBox, TableWidget)
 
 class Ui_Interest(object):
     def setupUi(self, Interest):
@@ -35,7 +37,7 @@ class Ui_Interest(object):
 
         self.horizontalLayout_2.addItem(self.hs_sort)
 
-        self.cb_sort = QComboBox(self.centralwidget)
+        self.cb_sort = ComboBox(self.centralwidget)
         self.cb_sort.setObjectName(u"cb_sort")
 
         self.horizontalLayout_2.addWidget(self.cb_sort)
@@ -43,7 +45,7 @@ class Ui_Interest(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
-        self.tw_interest = QTableWidget(self.centralwidget)
+        self.tw_interest = TableWidget(self.centralwidget)
         self.tw_interest.setObjectName(u"tw_interest")
         self.tw_interest.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
         self.tw_interest.setSelectionBehavior(QAbstractItemView.SelectRows)

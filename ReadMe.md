@@ -37,8 +37,13 @@ first_day_of_week=7
 location=CN
 language=zh
 multi_thread=1
-hide_on_startup=0
 login_expired=3600
+hide_on_startup=0
+show_lunar=1
+start_on_startup=0
+show_bill=1
+show_interest=1
+show_note=1
 
 [style]
 font=Arial,Kaiti
@@ -46,6 +51,7 @@ font_size=18
 logo=style/logo.png
 icon_interest=style/interest.png
 icon_bill=style/bill.png
+icon_note=style/note.png
 icon_exit=style/exit.png
 icon_imp=style/imp.png
 icon_exp=style/exp.png
@@ -54,5 +60,8 @@ icon_add=style/add.png
 icon_del=style/del.png
 icon_month=style/month.png
 icon_day=style/day.png
+icon_location=style/location.png
+icon_weather=style/weather.png
+icon_auto=style/auto.png
 qss=style/default.qss
 ```

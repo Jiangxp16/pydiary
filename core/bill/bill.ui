@@ -18,21 +18,12 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QSpinBox" name="sb_start">
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+       <widget class="QDateEdit" name="de_start">
+        <property name="displayFormat">
+         <string>yyyyMMdd</string>
         </property>
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::NoButtons</enum>
-        </property>
-        <property name="keyboardTracking">
-         <bool>false</bool>
-        </property>
-        <property name="maximum">
-         <number>99999999</number>
-        </property>
-        <property name="stepType">
-         <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+        <property name="calendarPopup">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -44,21 +35,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="sb_end">
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+       <widget class="QDateEdit" name="de_end">
+        <property name="displayFormat">
+         <string>yyyyMMdd</string>
         </property>
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::NoButtons</enum>
-        </property>
-        <property name="keyboardTracking">
-         <bool>false</bool>
-        </property>
-        <property name="maximum">
-         <number>99999999</number>
-        </property>
-        <property name="stepType">
-         <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+        <property name="calendarPopup">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -88,7 +70,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QDoubleSpinBox" name="dsb_total">
+       <widget class="DoubleSpinBox" name="dsb_total">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -120,7 +102,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QDoubleSpinBox" name="dsb_in">
+       <widget class="DoubleSpinBox" name="dsb_in">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -152,7 +134,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QDoubleSpinBox" name="dsb_out">
+       <widget class="DoubleSpinBox" name="dsb_out">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -179,7 +161,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QTableWidget" name="tw_bill">
+     <widget class="TableWidget" name="tw_bill">
       <property name="editTriggers">
        <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
       </property>
@@ -343,6 +325,18 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>core/util/qt_utils</header>
+  </customwidget>
+  <customwidget>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>core/util/qt_utils</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

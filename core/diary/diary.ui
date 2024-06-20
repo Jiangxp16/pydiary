@@ -153,22 +153,6 @@
          </spacer>
         </item>
         <item>
-         <widget class="QCheckBox" name="cb_autosave">
-          <property name="toolTip">
-           <string>Auto save.</string>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::RightToLeft</enum>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="pb_save">
           <property name="minimumSize">
            <size>
@@ -183,7 +167,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>Ctrl+S: SAVE</string>
+           <string>Ctrl+S: Save</string>
           </property>
           <property name="styleSheet">
            <string notr="true"/>
@@ -196,6 +180,22 @@
           </property>
           <property name="flat">
            <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_autosave">
+          <property name="toolTip">
+           <string>Auto save.</string>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::RightToLeft</enum>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -341,7 +341,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QTableWidget" name="tw_content">
+       <widget class="TableWidget" name="tw_content">
         <property name="editTriggers">
          <set>QAbstractItemView::AllEditTriggers</set>
         </property>
@@ -371,6 +371,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>core/util/qt_utils</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

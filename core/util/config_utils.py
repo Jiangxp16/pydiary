@@ -25,10 +25,15 @@ config = {
     "global": {
         "db_name": "diary.db",
         "first_day_of_week": 7,
+        "language": "en",
         "multi_thread": 1,
         "login_expired": 0,
         "hide_on_startup": 0,
         "show_lunar": 1,
+        "start_on_startup": 0,
+        "show_bill": 1,
+        "show_interest": 1,
+        "show_note": 1,
     },
     "style": {
         "font": "Arial,Kaiti",
