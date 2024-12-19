@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>602</width>
     <height>800</height>
    </rect>
   </property>
@@ -19,6 +19,9 @@
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QDateEdit" name="de_start">
+        <property name="currentSection">
+         <enum>QDateTimeEdit::YearSection</enum>
+        </property>
         <property name="displayFormat">
          <string>yyyyMMdd</string>
         </property>
@@ -36,6 +39,9 @@
       </item>
       <item>
        <widget class="QDateEdit" name="de_end">
+        <property name="currentSection">
+         <enum>QDateTimeEdit::YearSection</enum>
+        </property>
         <property name="displayFormat">
          <string>yyyyMMdd</string>
         </property>
@@ -209,6 +215,19 @@
         </property>
         <property name="placeholderText">
          <string>Search here.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDateEdit" name="de_month">
+        <property name="currentSection">
+         <enum>QDateTimeEdit::YearSection</enum>
+        </property>
+        <property name="displayFormat">
+         <string>yyyy/MM</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

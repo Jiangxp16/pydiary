@@ -47,8 +47,7 @@ def login(max_input=5):
             if len(text) > 16:
                 show_msg(tr("Password must be less than 16 characters!"), "WARNING")
                 continue
-            text_md5 = md5(text.encode("utf8")
-                           ).hexdigest() if text != "" else text
+            text_md5 = md5(text.encode("utf8")).hexdigest() if text != "" else text
             if pwd is None or pwd == text_md5:
                 break
             show_msg(tr("Password not match!"), "WARNING")
@@ -62,8 +61,7 @@ def login(max_input=5):
 
 def change_pwd():
     widget = QWidget()
-    widget.setWindowIcon(
-        QIcon(utils.get_path(config_utils.load_config("style", "logo"))))
+    widget.setWindowIcon(QIcon(utils.get_path(config_utils.load_config("style", "logo"))))
     pwd_old, ok_pressed = QInputDialog.getText(widget,
                                                tr("Input Old Password"),
                                                tr("OLD PASSWORD"),
@@ -106,8 +104,7 @@ def change_pwd():
     notes = note_utils.get_list_by()
 
     # re-encrypt data
-    pwd_new_md5 = md5(pwd_new.encode(
-        "utf8")).hexdigest() if pwd_new != "" else pwd_new
+    pwd_new_md5 = md5(pwd_new.encode("utf8")).hexdigest() if pwd_new != "" else pwd_new
     set_config("password", pwd_new_md5)
     encrypt_utils.key = pwd_new
     diary_utils.update_diaries(diaries)

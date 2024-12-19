@@ -150,9 +150,7 @@ class NoteWindow(Ui_Note, BaseWindow):
             hidden = (len(self.filter) > 0 and self.filter.upper() not in str(note).upper()) or \
                 (self.state == 1 and note.process >= 100) or (self.state == 2 and note.process < 100)
             tw.setRowHidden(row, hidden)
-        tw.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        QApplication.processEvents()
-        tw.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        tw.resizeRowsToContents()
         tw.setSortingEnabled(True)
         if self.note is not None:
             for row in range(tw.rowCount()):

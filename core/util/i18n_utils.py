@@ -66,6 +66,8 @@ zh_dict = {
     "Input New Password": "输入新密码",
     "New Password": "新密码",
     "New password not match!": "新密码不匹配",
+    "Exit Program": "退出程序",
+    "Are you sure to exit program?": "是否确认退出程序？",
 }
 def tr(x): return x
 

@@ -20,6 +20,7 @@ class BillWindow(Ui_Bill, BaseWindow):
             (self.le_filter.editingFinished, self.filter_edited),
             (self.tw_bill.itemSelectionChanged, self.bill_sel_changed),
             (self.tw_bill.cellChanged, self.bill_edited),
+            (self.de_month.dateChanged, self.date_changed),
             (self.de_start.dateChanged, self.date_changed),
             (self.de_end.dateChanged, self.date_changed),
         )
@@ -42,6 +43,7 @@ class BillWindow(Ui_Bill, BaseWindow):
         day_end = utils.get_last_day(today.year, today.month)
         self.day_start = utils.date2int(day_start)
         self.day_end = utils.date2int(day_end)
+        self.de_month.setDate(QDate(day_start.year, day_start.month, day_start.day))
         self.de_start.setDate(QDate(day_start.year, day_start.month, day_start.day))
         self.de_end.setDate(QDate(day_end.year, day_end.month, day_end.day))
         self.filter = ''
@@ -57,6 +59,7 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.lb_out.setText(tr("Out"))
         self.le_filter.setPlaceholderText(tr("Search..."))
         font_style = "*{font-size:12px;}"
+        self.de_month.setStyleSheet(font_style)
         self.de_start.setStyleSheet(font_style)
         self.de_end.setStyleSheet(font_style)
         self.dsb_total.setStyleSheet(font_style)
@@ -117,10 +120,15 @@ class BillWindow(Ui_Bill, BaseWindow):
 
     def date_changed(self):
         widget = self.sender()
-        if widget == self.de_start:
-            self.day_start = utils.date2int(self.de_start.date().toPython())
-        elif widget == self.de_end:
-            self.day_end = utils.date2int(self.de_end.date().toPython())
+        if widget == self.de_month:
+            self.disconnect_all()
+            date = self.de_month.date().toPython()
+            self.de_start.setDate(QDate(date.year, date.month, 1))
+            day_end = utils.get_last_day(date.year, date.month)
+            self.de_end.setDate(QDate(day_end.year, day_end.month, day_end.day))
+            self.connect_all()
+        self.day_start = utils.date2int(self.de_start.date().toPython())
+        self.day_end = utils.date2int(self.de_end.date().toPython())
         self.bills = bill_utils.get_between_dates(self.day_start, self.day_end)
         self.bill = None
         self.update_table_bill()
@@ -144,8 +152,9 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.update_table_bill()
 
     def bill_edited(self, row, col):
-        if self.bill is None:
-            return
+        id_bill = self.tw_bill.get_value(row, 0)
+        if self.bill is None or id_bill != self.bill.id:
+            self.bill_sel_changed()
         self.disconnect_all()
         bill = self.bill
         value = self.tw_bill.get_value(row, col)
@@ -169,6 +178,18 @@ class BillWindow(Ui_Bill, BaseWindow):
         tw = self.tw_bill
         tw.setRowCount(len(self.bills))
         tw.setSortingEnabled(False)
+        less_than = None
+        more_than = None
+        if "<" in self.filter:
+            try:
+                less_than = float(self.filter.replace("<", ""))
+            except BaseException:
+                pass
+        elif ">" in self.filter:
+            try:
+                more_than = float(self.filter.replace(">", ""))
+            except BaseException:
+                pass
         for row in range(tw.rowCount()):
             bill = self.bills[row]
             tw.set_item(row, 0, bill.id)
@@ -177,8 +198,13 @@ class BillWindow(Ui_Bill, BaseWindow):
             tw.set_item(row, 3, bill.type, center=True)
             tw.set_item(row, 4, float(bill.amount), center=True)
             tw.set_item(row, 5, bill.item)
-            tw.setRowHidden(row, len(self.filter) > 0 and
-                            self.filter.upper() not in (str(bill) + tw.get_value(row, 2)).upper())
+            if less_than is not None:
+                tw.setRowHidden(row, bill.amount > less_than)
+            elif more_than is not None:
+                tw.setRowHidden(row, bill.amount < more_than)
+            else:
+                tw.setRowHidden(row, len(self.filter) > 0 and self.filter.upper()
+                                not in (str(bill) + tw.get_value(row, 2)).upper())
         tw.setSortingEnabled(True)
         if self.bill is not None:
             for row in range(tw.rowCount()):

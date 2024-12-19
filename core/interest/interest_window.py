@@ -1,7 +1,7 @@
 from core.interest.interest import Ui_Interest
 
 from core.interest import interest_utils
-from core.util.qt_utils import BaseWindow, ComboBox, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon
+from core.util.qt_utils import BaseWindow, ComboBox, QEvent, QFileDialog, QMessageBox, QKeyEvent, Qt, QIcon, QAbstractItemView
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -89,6 +89,8 @@ class InterestWindow(Ui_Interest, BaseWindow):
             self.interest = interest_utils.add(sort=len(self.sorts) - 1)
         self.interests.append(self.interest)
         self.update_table_interest()
+        self.tw_interest.verticalScrollBar().setSliderPosition(self.row_interest * self.tw_interest.rowHeight(0))
+        # self.tw_interest.scrollToItem(self.tw_interest.item(self.row_interest, 0), QAbstractItemView.ScrollHint.PositionAtCenter)
 
     def btn_del(self):
         if self.interest is None:
