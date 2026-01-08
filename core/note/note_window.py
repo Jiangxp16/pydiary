@@ -1,6 +1,6 @@
 from core.note import note_utils
 from core.note.note import Ui_Note
-from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView, TextEdit, QApplication
+from core.util.qt_utils import BaseWindow, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QHeaderView, TextEdit, QApplication, QMessageBox
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -69,6 +69,10 @@ class NoteWindow(Ui_Note, BaseWindow):
 
     def btn_del(self):
         if self.note is None:
+            return
+        ok_pressed = QMessageBox.question(self, 'WARNING', tr('Delete selected record?'), QMessageBox.Yes | QMessageBox.No,
+                                          QMessageBox.No)
+        if ok_pressed == QMessageBox.No:
             return
         self.notes.remove(self.note)
         self.start_task(note_utils.delete, {'id': self.note.id})

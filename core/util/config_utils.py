@@ -35,6 +35,7 @@ config = {
         "show_bill": 1,
         "show_interest": 1,
         "show_note": 1,
+        "ui_default": "none",
     },
     "style": {
         "font": "Arial,Kaiti",

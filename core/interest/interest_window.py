@@ -95,6 +95,10 @@ class InterestWindow(Ui_Interest, BaseWindow):
     def btn_del(self):
         if self.interest is None:
             return
+        ok_pressed = QMessageBox.question(self, 'WARNING', tr('Delete selected record?'), QMessageBox.Yes | QMessageBox.No,
+                                          QMessageBox.No)
+        if ok_pressed == QMessageBox.No:
+            return
         self.interests.remove(self.interest)
         self.start_task(interest_utils.delete, kwargs={'id': self.interest.id})
         self.interest = None

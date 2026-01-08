@@ -2,7 +2,7 @@ import datetime
 
 from core.bill import bill_utils
 from core.bill.bill import Ui_Bill
-from core.util.qt_utils import BaseWindow, ComboBox, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QDate
+from core.util.qt_utils import BaseWindow, ComboBox, QEvent, QFileDialog, Qt, QIcon, QKeyEvent, QDate, QMessageBox
 from core.util import utils, config_utils
 from core.util.i18n_utils import tr
 
@@ -96,6 +96,10 @@ class BillWindow(Ui_Bill, BaseWindow):
 
     def btn_del(self):
         if self.bill is None:
+            return
+        ok_pressed = QMessageBox.question(self, 'WARNING', tr('Delete selected record?'), QMessageBox.Yes | QMessageBox.No,
+                                          QMessageBox.No)
+        if ok_pressed == QMessageBox.No:
             return
         self.bills.remove(self.bill)
         self.start_task(bill_utils.delete, kwargs={'id': self.bill.id})

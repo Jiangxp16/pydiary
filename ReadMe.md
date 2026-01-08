@@ -10,11 +10,11 @@ You can add password now on the beginning. All string data will be encrypted wit
 Use your own distpath.
 Build one-file mode with:
 ```
-pyinstaller -F core\start.py -w -i style\logo.png -n Diary --add-data=".\style\*;.\style" --hidden-import=holidays.countries --exclude-module PIL --distpath "E:\Program Files\Diary"
+pyinstaller -F core\start.py -w -i style\logo.png -n Diary --add-data=".\style\*;.\style" --hidden-import=holidays.countries --exclude-module PIL --distpath "D:\Apps\Diary"
 ```
 or build with your own spec file:
 ```
-pyinstaller Diary.spec -y --distpath "E:\Program Files\Diary"
+pyinstaller Diary.spec -y --distpath "D:\Apps\Diary"
 ```
 
 ## **Dependencies**
@@ -22,8 +22,8 @@ Developed with python 3.10.6.
 ```
 pyside6==6.6.2
 pillow==10.2.0
-openpyxl=3.1.2
-pyinstaller=6.4.0
+openpyxl==3.1.2
+pyinstaller==6.4.0
 holidays==0.44
 sxtwl==2.0.6
 ```
@@ -44,6 +44,7 @@ start_on_startup=0
 show_bill=1
 show_interest=1
 show_note=1
+ui_default=none
 
 [style]
 font=Arial,Kaiti
