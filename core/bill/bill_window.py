@@ -75,6 +75,7 @@ class BillWindow(Ui_Bill, BaseWindow):
         self.tw_bill.set_delegate(col_dict={2: ComboBox}, labels_dict={2: self.inouts})
         self.bills = bill_utils.get_between_dates(self.day_start, self.day_end)
         self.update_table_bill()
+        self.dsb_total.setFocus()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
@@ -86,6 +87,8 @@ class BillWindow(Ui_Bill, BaseWindow):
                 return self.btn_imp()
             if event.key() == Qt.Key.Key_E:
                 return self.btn_exp()
+            if event.key() == Qt.Key.Key_F:
+                self.le_filter.setFocus()
         else:
             return super().keyPressEvent(event)
 
@@ -196,7 +199,7 @@ class BillWindow(Ui_Bill, BaseWindow):
                 pass
         for row in range(tw.rowCount()):
             bill = self.bills[row]
-            tw.set_item(row, 0, bill.id)
+            tw.set_item(row, 0, bill.id, False, True)
             tw.set_item(row, 1, bill.date, center=True)
             tw.set_item(row, 2, self.inouts[0 if bill.inout < 0 else 1], center=True)
             tw.set_item(row, 3, bill.type, center=True)
@@ -209,6 +212,8 @@ class BillWindow(Ui_Bill, BaseWindow):
             else:
                 tw.setRowHidden(row, len(self.filter) > 0 and self.filter.upper()
                                 not in (str(bill) + tw.get_value(row, 2)).upper())
+        debug_mode = int(config_utils.load_config("global", "debug", 0))
+        tw.setColumnHidden(0, not debug_mode)
         tw.setSortingEnabled(True)
         if self.bill is not None:
             for row in range(tw.rowCount()):

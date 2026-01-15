@@ -36,6 +36,7 @@ config = {
         "show_interest": 1,
         "show_note": 1,
         "ui_default": "none",
+        "debug": 0,
     },
     "style": {
         "font": "Arial,Kaiti",

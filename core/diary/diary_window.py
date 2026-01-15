@@ -123,7 +123,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
         self.action_exit.setIcon(QIcon(utils.get_path(
             config_utils.load_config("style", "icon_exit"))))
 
-        self.action_diary.triggered.connect(self.show_or_hide_window)
+        self.action_diary.triggered.connect(self.show_window)
         self.action_interest.triggered.connect(self.open_interest_window)
         self.action_bill.triggered.connect(self.open_bill_window)
         self.action_note.triggered.connect(self.open_note_window)
@@ -344,29 +344,32 @@ class DiaryWindow(Ui_Diary, BaseWindow):
 
     def tray_activated(self, reason):
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
-            self.open_last_window()
+            self.show_default(switch=True)
 
-    def open_last_window(self):
+    def show_default(self, switch=False):
         ui_default = config_utils.load_config("global", "ui_default", "none")
-        if ui_default == "bill":
-            self.open_bill_window()
-        elif ui_default == "diary":
-            self.show_or_hide_window()
+        if ui_default == "diary":
+            self.show_window(switch)
+        elif ui_default == "bill":
+            self.open_bill_window(switch)
         elif ui_default == "interest":
-            self.open_interest_window()
+            self.open_interest_window(switch)
         elif ui_default == "note":
-            self.open_note_window()
+            self.open_note_window(switch)
         else:
-            if self.window_last == self:
-                self.show_or_hide_window()
-            elif self.window_last == self.window_bill:
-                self.open_bill_window()
-            elif self.window_last == self.window_interest:
-                self.open_interest_window()
-            elif self.window_last == self.window_note:
-                self.open_note_window()
+            self.show_last_window(switch)
 
-    def open_interest_window(self):
+    def show_last_window(self, switch=False):
+        if self.window_last == self:
+            self.show_window(switch)
+        elif self.window_last == self.window_bill:
+            self.open_bill_window(switch)
+        elif self.window_last == self.window_interest:
+            self.open_interest_window(switch)
+        elif self.window_last == self.window_note:
+            self.open_note_windowswitch()
+
+    def open_interest_window(self, switch=False):
         if self.window_interest is None:
             from core.interest.interest_window import InterestWindow
             self.window_interest = InterestWindow()
@@ -380,11 +383,13 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             else:
                 self.window_interest.show()
             self.window_interest.activateWindow()
-        else:
+        elif switch:
             self.window_interest.hide()
+        else:
+            self.window_interest.activateWindow()
         self.window_last = self.window_interest
 
-    def open_bill_window(self):
+    def open_bill_window(self, switch=False):
         if self.window_bill is None:
             from core.bill.bill_window import BillWindow
             self.window_bill = BillWindow()
@@ -398,11 +403,13 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             else:
                 self.window_bill.show()
             self.window_bill.activateWindow()
-        else:
+        elif switch:
             self.window_bill.hide()
+        else:
+            self.window_bill.activateWindow()
         self.window_last = self.window_bill
 
-    def open_note_window(self):
+    def open_note_window(self, switch=False):
         if self.window_note is None:
             from core.note.note_window import NoteWindow
             self.window_note = NoteWindow()
@@ -416,8 +423,10 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             else:
                 self.window_note.show()
             self.window_note.activateWindow()
-        else:
+        elif switch:
             self.window_note.hide()
+        else:
+            self.window_note.activateWindow()
         QApplication.processEvents()
         self.window_note.update_table_note()
         self.window_last = self.window_note
@@ -456,7 +465,7 @@ class DiaryWindow(Ui_Diary, BaseWindow):
                 return
         return super().changeEvent(event)
 
-    def show_or_hide_window(self):
+    def show_window(self, show=True):
         if self.isHidden():
             if self.login_expired():
                 return
@@ -467,8 +476,10 @@ class DiaryWindow(Ui_Diary, BaseWindow):
             else:
                 self.show()
             self.activateWindow()
-        else:
+        elif not show:
             self.hide()
+        else:
+            self.activateWindow()
         self.window_last = self
 
     def close_window(self):

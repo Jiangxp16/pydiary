@@ -7,7 +7,7 @@ logs/
 test*
 tool*
 *.ini
-*.spec
+# *.spec
 
 
 # Environments

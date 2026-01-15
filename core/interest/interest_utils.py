@@ -114,7 +114,7 @@ def get_list_by(**kwargs):
             sql_cmd += "`%s`=? AND " % key
             args.append(kwargs[key])
         sql_cmd = sql_cmd[:-5]
-    sql_cmd += " ORDER BY `id` ASC"
+    sql_cmd += " ORDER BY `updated` ASC"
     rs_list = sql_utils.select(sql_cmd, args)
     for rs in rs_list:
         interests.append(Interest(*rs))

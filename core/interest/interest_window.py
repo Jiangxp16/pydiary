@@ -165,7 +165,7 @@ class InterestWindow(Ui_Interest, BaseWindow):
         tw.setSortingEnabled(False)
         for row in range(tw.rowCount()):
             interest = self.interests[row]
-            tw.set_item(row, 0, interest.id)
+            tw.set_item(row, 0, interest.id, False, True)
             tw.set_item(row, 1, interest.added, False, center=True)
             tw.set_item(row, 2, interest.name)
             tw.set_item(row, 3, self.sorts[interest.sort], center=True)
@@ -178,6 +178,8 @@ class InterestWindow(Ui_Interest, BaseWindow):
             tw.set_item(row, 10, interest.remark)
             tw.setRowHidden(row, len(self.filter) > 0 and
                             self.filter.upper() not in (str(interest) + tw.get_value(row, 3)).upper())
+        debug_mode = int(config_utils.load_config("global", "debug", 0))
+        tw.setColumnHidden(0, not debug_mode)
         tw.setSortingEnabled(True)
         if self.interest is not None:
             for row in range(tw.rowCount()):

@@ -144,7 +144,7 @@ class NoteWindow(Ui_Note, BaseWindow):
         tw.setSortingEnabled(False)
         for row in range(tw.rowCount()):
             note = self.notes[row]
-            tw.set_item(row, 0, note.id)
+            tw.set_item(row, 0, note.id, False, True)
             tw.set_item(row, 1, note.begin, center=True)
             tw.set_item(row, 2, note.last, center=True)
             tw.set_item(row, 3, note.process, center=True)
@@ -155,6 +155,8 @@ class NoteWindow(Ui_Note, BaseWindow):
                 (self.state == 1 and note.process >= 100) or (self.state == 2 and note.process < 100)
             tw.setRowHidden(row, hidden)
         tw.resizeRowsToContents()
+        debug_mode = int(config_utils.load_config("global", "debug", 0))
+        tw.setColumnHidden(0, not debug_mode)
         tw.setSortingEnabled(True)
         if self.note is not None:
             for row in range(tw.rowCount()):
